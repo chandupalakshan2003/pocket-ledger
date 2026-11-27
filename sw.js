@@ -1,9 +1,13 @@
-const CACHE_NAME = 'pocket-ledger-v3';
+const CACHE_NAME = 'pocket-ledger-v5';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
-  './app-icon.png'
+  './app-icon.png',
+  './nav-expenses.png',
+  './nav-friends.png',
+  './nav-wishlist.png',
+  './nav-analysis.png'
 ];
 
 self.addEventListener('install', event => {
