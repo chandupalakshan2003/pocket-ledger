@@ -6,7 +6,32 @@
 <meta name="theme-color" content="#0d1117">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>PocketLedger — Offline Expense & IOU Tracker</title>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>PocketLedger</title>
+<link id="manifest-link" rel="manifest">
+<script>
+  // Generate standalone PWA manifest + SVG app icon inline (keeps everything in 1 file)
+  (function() {
+    const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#161b22"/><rect x="96" y="144" width="320" height="224" rx="36" fill="#58a6ff"/><path d="M320 224h96v64h-96a32 32 0 0 1 0-64z" fill="#0d1117"/><circle cx="352" cy="256" r="14" fill="#3fb950"/></svg>`;
+    const iconUrl = 'data:image/svg+xml;base64,' + btoa(iconSvg);
+    const manifest = {
+      name: 'PocketLedger',
+      short_name: 'PocketLedger',
+      start_url: location.href.split('#')[0],
+      scope: './',
+      display: 'standalone',
+      orientation: 'portrait',
+      background_color: '#0d1117',
+      theme_color: '#0d1117',
+      icons: [
+        { src: iconUrl, sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' },
+        { src: iconUrl, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }
+      ]
+    };
+    const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+    document.getElementById('manifest-link').href = URL.createObjectURL(blob);
+  })();
+</script>
 <style>
   :root {
     --bg: #0d1117;
@@ -40,38 +65,30 @@
     line-height: 1.45;
     padding-bottom: 84px;
     min-height: 100vh;
+    user-select: none;
+  }
+
+  input, select {
+    user-select: text;
   }
 
   header {
     position: sticky;
     top: 0;
     z-index: 20;
-    background: rgba(13, 17, 23, 0.92);
+    background: rgba(13, 17, 23, 0.94);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border);
-    padding: 14px 16px;
+    padding: calc(14px + env(safe-area-inset-top)) 16px 14px;
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
 
   header h1 {
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     font-weight: 700;
     letter-spacing: -0.01em;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .badge-offline {
-    font-size: 0.68rem;
-    font-weight: 600;
-    padding: 2px 8px;
-    border-radius: 999px;
-    background: var(--green-dim);
-    color: var(--green);
-    border: 1px solid rgba(63, 185, 80, 0.3);
   }
 
   .container {
@@ -94,7 +111,6 @@
     to { opacity: 1; transform: translateY(0); }
   }
 
-  /* Summary Cards */
   .summary-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -139,7 +155,6 @@
   .text-amber { color: var(--amber); }
   .text-accent { color: var(--accent); }
 
-  /* Month Selector Bar */
   .month-bar {
     display: flex;
     align-items: center;
@@ -159,6 +174,8 @@
     font-weight: 600;
     outline: none;
     cursor: pointer;
+    width: auto;
+    padding: 4px;
   }
 
   .month-bar select option {
@@ -166,7 +183,6 @@
     color: var(--text);
   }
 
-  /* Forms */
   .form-card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -220,7 +236,6 @@
     border-color: var(--accent);
   }
 
-  /* Segmented Control */
   .segmented {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -285,7 +300,6 @@
     border: 1px solid rgba(248, 81, 73, 0.3);
   }
 
-  /* List Items */
   .section-header {
     display: flex;
     justify-content: space-between;
@@ -399,7 +413,6 @@
     color: var(--red);
   }
 
-  /* Category breakdown bars */
   .cat-row {
     margin-bottom: 10px;
   }
@@ -431,7 +444,6 @@
     border-radius: var(--radius);
   }
 
-  /* Bottom Navigation */
   nav.bottom-nav {
     position: fixed;
     bottom: 0;
@@ -442,7 +454,7 @@
     border-top: 1px solid var(--border);
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+    padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
     z-index: 30;
   }
 
@@ -454,14 +466,14 @@
     flex-direction: column;
     align-items: center;
     gap: 3px;
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     font-weight: 600;
     padding: 4px 0;
     cursor: pointer;
   }
 
   .nav-btn span.icon {
-    font-size: 1.2rem;
+    font-size: 1.25rem;
     line-height: 1;
   }
 
@@ -471,7 +483,7 @@
 
   .toast {
     position: fixed;
-    bottom: 76px;
+    bottom: 80px;
     left: 50%;
     transform: translateX(-50%) translateY(20px);
     background: #238636;
@@ -669,7 +681,7 @@
     <div class="card" style="margin-bottom:12px;">
       <div class="card-label">Backup & Gemini API Data Export</div>
       <p style="font-size:0.82rem; color:var(--muted); margin:6px 0 12px;">
-        All data is saved locally in your browser's <code>localStorage</code>. Export a JSON backup regularly so you never lose records—and use this exact structured JSON when you connect the Gemini API in v2.
+        All data is saved locally in your phone's storage. Export a JSON backup regularly so you never lose records—and use this exact structured JSON when you connect the Gemini API in v2.
       </p>
       <button class="btn btn-primary" onclick="exportJSON()" style="margin-bottom:8px;">Export Backup (.json)</button>
       <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">Restore Backup (.json)</button>
@@ -756,7 +768,7 @@
   }
 
   function getCurrentMonthStr() {
-    return getTodayStr().slice(0, 7); // YYYY-MM
+    return getTodayStr().slice(0, 7);
   }
 
   function formatMonthLabel(ym) {
@@ -772,7 +784,6 @@
     btnEl.classList.add('active');
   }
 
-  // --- EXPENSES ---
   document.getElementById('expenseForm').addEventListener('submit', function(e) {
     e.preventDefault();
     const amount = parseFloat(document.getElementById('expAmount').value);
@@ -842,7 +853,6 @@
     document.getElementById('selectedMonthTotal').textContent = formatRs(selTotal);
     document.getElementById('expCount').textContent = `${filtered.length} item${filtered.length === 1 ? '' : 's'}`;
 
-    // Category breakdown
     const catCard = document.getElementById('categoryBreakdownCard');
     const catContainer = document.getElementById('categoryBreakdown');
     if (filtered.length > 0 && selTotal > 0) {
@@ -868,7 +878,7 @@
       catCard.style.display = 'none';
     }
 
-    const listEl = document.getElementById('expenseList');
+  const listEl = document.getElementById('expenseList');
     if (filtered.length === 0) {
       listEl.innerHTML = `<div class="empty-state">No expenses recorded for ${formatMonthLabel(selMonth)}.</div>`;
       return;
@@ -891,7 +901,6 @@
     `).join('');
   }
 
-  // --- FRIENDS DEBTS ---
   function setDebtType(type) {
     document.getElementById('debtType').value = type;
     const btnOwe = document.getElementById('btnTypeOwe');
@@ -990,7 +999,6 @@
     }).join('');
   }
 
-  // --- FUTURE BUY CHECKLIST ---
   document.getElementById('wishForm').addEventListener('submit', function(e) {
     e.preventDefault();
     const name = document.getElementById('wishName').value.trim();
@@ -1085,7 +1093,6 @@
     `).join('');
   }
 
-  // --- DATA & HISTORY TAB ---
   function renderDataTab() {
     const byMonth = {};
     state.expenses.forEach(e => {
@@ -1176,7 +1183,6 @@
     renderDataTab();
   }
 
-  // Init
   document.getElementById('expDate').value = getTodayStr();
   document.getElementById('debtDate').value = getTodayStr();
   loadState();
