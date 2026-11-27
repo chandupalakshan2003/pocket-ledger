@@ -70,6 +70,17 @@
     letter-spacing: -0.01em;
   }
 
+  .header-pill {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    cursor: pointer;
+  }
+
   .container {
     max-width: 540px;
     margin: 0 auto;
@@ -109,7 +120,7 @@
   }
 
   .card-label {
-    font-size: 0.74rem;
+    font-size: 0.72rem;
     color: var(--muted);
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -120,19 +131,46 @@
   }
 
   .card-value {
-    font-size: 1.55rem;
+    font-size: 1.48rem;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
   }
 
   .card-value.sm {
-    font-size: 1.18rem;
+    font-size: 1.15rem;
+  }
+
+  .card-sub {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 4px;
   }
 
   .text-green { color: var(--green); }
   .text-red { color: var(--red); }
   .text-amber { color: var(--amber); }
   .text-accent { color: var(--accent); }
+
+  .status-banner {
+    border-radius: 12px;
+    padding: 11px 13px;
+    margin-bottom: 14px;
+    font-size: 0.84rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .status-banner.surplus {
+    background: var(--green-dim);
+    border: 1px solid rgba(63, 185, 80, 0.35);
+    color: var(--green);
+  }
+  .status-banner.shortage {
+    background: var(--red-dim);
+    border: 1px solid rgba(248, 81, 73, 0.35);
+    color: var(--red);
+  }
 
   .form-card {
     background: var(--surface);
@@ -202,11 +240,21 @@
     border: none;
     color: var(--muted);
     padding: 8px;
-    font-size: 0.85rem;
+    font-size: 0.84rem;
     font-weight: 600;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.15s;
+  }
+
+  .segmented button.active-exp {
+    background: var(--accent-dim);
+    color: var(--accent);
+  }
+
+  .segmented button.active-inc {
+    background: var(--green-dim);
+    color: var(--green);
   }
 
   .segmented button.active-owe {
@@ -239,6 +287,11 @@
     color: #0d1117;
   }
 
+  .btn-green {
+    background: var(--green);
+    color: #0d1117;
+  }
+
   .btn-secondary {
     background: var(--surface-hover);
     color: var(--text);
@@ -256,7 +309,7 @@
     justify-content: space-between;
     align-items: center;
     margin: 14px 0 8px;
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     font-weight: 600;
     color: var(--muted);
     text-transform: uppercase;
@@ -320,7 +373,7 @@
 
   .pill.high { background: var(--red-dim); color: var(--red); }
   .pill.medium { background: var(--amber-dim); color: var(--amber); }
-  .pill.low { background: var(--green-dim); color: var(--green); }
+  .pill.low, .pill.income { background: var(--green-dim); color: var(--green); }
 
   .item-right {
     text-align: right;
@@ -423,7 +476,7 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.72);
+    background: rgba(0, 0, 0, 0.74);
     z-index: 60;
     align-items: center;
     justify-content: center;
@@ -438,7 +491,7 @@
     border-radius: var(--radius);
     padding: 18px;
     width: 100%;
-    max-width: 380px;
+    max-width: 390px;
   }
 
   nav.bottom-nav {
@@ -513,23 +566,38 @@
 
 <header>
   <h1>PocketLedger</h1>
+  <button class="header-pill" onclick="openBalanceModal()">Set Starting Cash</button>
 </header>
 
 <div class="container">
 
-  <!-- TAB 1: EXPENSES -->
+  <!-- TAB 1: CASHFLOW (EXPENSES + RECEIVED MONEY) -->
   <section id="tab-expenses" class="tab-panel active">
     <div class="summary-grid">
-      <div class="card full">
-        <div class="card-label">
-          <span>This Month Total Spend (<span id="currentMonthLabel"></span>)</span>
-        </div>
-        <div class="card-value text-accent" id="currentMonthTotal">Rs. 0</div>
+      <div class="card">
+        <div class="card-label">Available Cash Now</div>
+        <div class="card-value sm text-green" id="availableCash">Rs. 0</div>
+        <div class="card-sub" id="startingCashSub">Start: Rs. 0</div>
+      </div>
+      <div class="card">
+        <div class="card-label">This Month Spend</div>
+        <div class="card-value sm text-accent" id="currentMonthTotal">Rs. 0</div>
+        <div class="card-sub" id="currentMonthIncomeSub">Received: Rs. 0</div>
       </div>
     </div>
 
+    <div id="matchBanner" class="status-banner surplus">
+      <span id="matchBannerText">Income & spend are balanced.</span>
+      <strong id="matchBannerDiff">Rs. 0</strong>
+    </div>
+
     <div class="form-card">
-      <div class="form-title">+ Add Expense</div>
+      <div class="segmented" style="margin-bottom:12px;">
+        <button type="button" id="btnEntryExpense" class="active-exp" onclick="setEntryMode('expense')">- Add Expense</button>
+        <button type="button" id="btnEntryIncome" onclick="setEntryMode('income')">+ Received Money</button>
+      </div>
+
+      <!-- EXPENSE FORM -->
       <form id="expenseForm">
         <div class="form-row">
           <div class="form-group">
@@ -561,16 +629,46 @@
         </div>
         <button type="submit" class="btn btn-primary" style="margin-top:6px;">Save Expense</button>
       </form>
+
+      <!-- RECEIVED MONEY FORM -->
+      <form id="incomeForm" style="display:none;">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Amount Received (Rs.)</label>
+            <input type="number" id="incAmount" inputmode="decimal" step="any" min="0.01" placeholder="e.g. 10000" required>
+          </div>
+          <div class="form-group">
+            <label>Source</label>
+            <select id="incSource">
+              <option value="Mom / Home">Mom / Home</option>
+              <option value="Part-Time / Freelance">Part-Time / Freelance</option>
+              <option value="Mahapola / Bursary">Mahapola / Bursary</option>
+              <option value="Gift / Other">Gift / Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="incDate" required>
+          </div>
+          <div class="form-group">
+            <label>Note (Optional)</label>
+            <input type="text" id="incNote" placeholder="e.g. Nov allowance">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-green" style="margin-top:6px;">Save Received Money</button>
+      </form>
     </div>
 
     <div class="section-header">
-      <span>This Month Transactions</span>
+      <span>This Month Activity (<span id="currentMonthLabel"></span>)</span>
       <span id="expCount">0 items</span>
     </div>
     <div class="item-list" id="expenseList"></div>
   </section>
 
-  <!-- TAB 2: FRIENDS IOU LEDGER (PARTIAL + FULL SETTLEMENTS) -->
+  <!-- TAB 2: FRIENDS IOU LEDGER (PERSON-WISE GROUPING + PARTIAL SETTLEMENTS) -->
   <section id="tab-friends" class="tab-panel">
     <div class="summary-grid">
       <div class="card">
@@ -594,7 +692,8 @@
         <div class="form-row">
           <div class="form-group">
             <label>Friend Name / Initials</label>
-            <input type="text" id="debtPerson" placeholder="e.g. Ch / Kasun" required>
+            <input type="text" id="debtPerson" list="friendSuggestions" placeholder="e.g. Ch / Kasun" required>
+            <datalist id="friendSuggestions"></datalist>
           </div>
           <div class="form-group">
             <label>Total Amount (Rs.)</label>
@@ -616,8 +715,11 @@
     </div>
 
     <div class="section-header">
-      <span>Installments & Balances</span>
-      <span id="debtCount">0 records</span>
+      <span>Friends Ledger</span>
+      <div style="display:flex; gap:6px;">
+        <button class="chip-btn" id="btnViewRecords" onclick="setFriendView('records')" style="color:var(--accent); border-color:var(--accent);">Records</button>
+        <button class="chip-btn" id="btnViewGrouped" onclick="setFriendView('grouped')">By Person</button>
+      </div>
     </div>
     <div class="item-list" id="debtList"></div>
   </section>
@@ -666,13 +768,18 @@
   <!-- TAB 4: ALL-MONTHS ANALYSIS & BACKUP -->
   <section id="tab-analysis" class="tab-panel">
     <div class="card" style="margin-bottom:12px;">
-      <div class="card-label">All Months Expense Comparison</div>
+      <div class="card-label">All Months: Received vs. Spent</div>
       <div id="monthlyHistoryList" style="margin-top:6px;"></div>
     </div>
 
     <div class="card" style="margin-bottom:12px;">
-      <div class="card-label">All-Time Category Breakdown</div>
+      <div class="card-label">All-Time Expense Categories</div>
       <div id="allTimeCategories" style="margin-top:8px;"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:12px;">
+      <div class="card-label">Income Sources Summary</div>
+      <div id="incomeSummaryList" style="margin-top:8px;"></div>
     </div>
 
     <div class="card" style="margin-bottom:12px;">
@@ -692,6 +799,30 @@
     </div>
   </section>
 
+</div>
+
+<!-- STARTING BALANCE MODAL -->
+<div class="modal-backdrop" id="balanceModal">
+  <div class="modal-box">
+    <div class="form-title">Set Current Cash on Hand</div>
+    <p style="font-size:0.82rem; color:var(--muted); margin-bottom:12px;">
+      Enter how much money you currently have in your wallet/bank starting today. Future received money adds to this, and expenses subtract from it.
+    </p>
+    <form id="balanceForm">
+      <div class="form-group">
+        <label>Starting Cash (Rs.)</label>
+        <input type="number" id="startingBalanceInput" inputmode="decimal" step="any" min="0" placeholder="e.g. 5000" required>
+      </div>
+      <div class="form-group">
+        <label>Start Date</label>
+        <input type="date" id="startingDateInput" required>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px;">
+        <button type="button" class="btn btn-secondary" onclick="closeBalanceModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Cash</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <!-- PARTIAL PAYMENT MODAL -->
@@ -722,7 +853,7 @@
 <nav class="bottom-nav">
   <button class="nav-btn active" onclick="switchTab('expenses', this)">
     <img src="nav-expenses.png" class="nav-icon-img" onerror="this.outerHTML='<span class='nav-icon-emoji'>💸</span>'">
-    <span>Expenses</span>
+    <span>Cashflow</span>
   </button>
   <button class="nav-btn" onclick="switchTab('friends', this)">
     <img src="nav-friends.png" class="nav-icon-img" onerror="this.outerHTML='<span class='nav-icon-emoji'>🤝</span>'">
@@ -740,9 +871,13 @@
 
 <script>
   const STORAGE_KEY = 'pocket_ledger_v1';
+  let friendViewMode = 'records'; // 'records' or 'grouped'
 
   let state = {
+    startingBalance: 0,
+    startingDate: '',
     expenses: [],
+    incomes: [],
     debts: [],
     wishlist: []
   };
@@ -752,7 +887,10 @@
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
+        state.startingBalance = Number(parsed.startingBalance) || 0;
+        state.startingDate = parsed.startingDate || getTodayStr();
         state.expenses = Array.isArray(parsed.expenses) ? parsed.expenses : [];
+        state.incomes = Array.isArray(parsed.incomes) ? parsed.incomes : [];
         state.debts = Array.isArray(parsed.debts) ? parsed.debts : [];
         state.wishlist = Array.isArray(parsed.wishlist) ? parsed.wishlist : [];
         state.debts.forEach(d => {
@@ -763,6 +901,8 @@
             d.payments = [];
           }
         });
+      } else {
+        state.startingDate = getTodayStr();
       }
     } catch (e) {
       console.error('Failed to load localStorage', e);
@@ -812,18 +952,47 @@
     btnEl.classList.add('active');
   }
 
-  // Only include direct expenses (borrowed IOUs stay separate in Friends tab)
-  function getDirectExpenses() {
-    return state.expenses.map(e => ({
-      id: e.id,
-      amount: Number(e.amount),
-      category: e.category,
-      date: e.date,
-      note: e.note || e.category
-    })).sort((a, b) => b.date.localeCompare(a.date));
+  // --- STARTING BALANCE MODAL ---
+  function openBalanceModal() {
+    document.getElementById('startingBalanceInput').value = state.startingBalance || '';
+    document.getElementById('startingDateInput').value = state.startingDate || getTodayStr();
+    document.getElementById('balanceModal').classList.add('open');
   }
 
-  // --- EXPENSES TAB ---
+  function closeBalanceModal() {
+    document.getElementById('balanceModal').classList.remove('open');
+  }
+
+  document.getElementById('balanceForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    state.startingBalance = parseFloat(document.getElementById('startingBalanceInput').value) || 0;
+    state.startingDate = document.getElementById('startingDateInput').value || getTodayStr();
+    closeBalanceModal();
+    saveState();
+    showToast('Starting cash updated');
+  });
+
+  // --- ENTRY MODE TOGGLE (EXPENSE VS RECEIVED MONEY) ---
+  function setEntryMode(mode) {
+    const expForm = document.getElementById('expenseForm');
+    const incForm = document.getElementById('incomeForm');
+    const btnExp = document.getElementById('btnEntryExpense');
+    const btnInc = document.getElementById('btnEntryIncome');
+
+    if (mode === 'expense') {
+      expForm.style.display = 'block';
+      incForm.style.display = 'none';
+      btnExp.className = 'active-exp';
+      btnInc.className = '';
+    } else {
+      expForm.style.display = 'none';
+      incForm.style.display = 'block';
+      btnExp.className = '';
+      btnInc.className = 'active-inc';
+    }
+  }
+
+  // --- EXPENSES & INCOME ---
   document.getElementById('expenseForm').addEventListener('submit', function(e) {
     e.preventDefault();
     const amount = parseFloat(document.getElementById('expAmount').value);
@@ -847,54 +1016,151 @@
     showToast('Expense added');
   });
 
+  document.getElementById('incomeForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const amount = parseFloat(document.getElementById('incAmount').value);
+    const source = document.getElementById('incSource').value;
+    const date = document.getElementById('incDate').value;
+    const note = document.getElementById('incNote').value.trim();
+
+    if (!amount || amount <= 0) return;
+
+    state.incomes.unshift({
+      id: Date.now().toString(),
+      amount,
+      source,
+      date,
+      note
+    });
+
+    document.getElementById('incAmount').value = '';
+    document.getElementById('incNote').value = '';
+    saveState();
+    showToast('Received money added');
+  });
+
   function deleteExpense(id) {
     state.expenses = state.expenses.filter(x => x.id !== id);
     saveState();
     showToast('Deleted');
   }
 
-  function renderExpenses() {
+  function deleteIncome(id) {
+    state.incomes = state.incomes.filter(x => x.id !== id);
+    saveState();
+    showToast('Deleted');
+  }
+
+  function renderCashflow() {
     const curMonth = getCurrentMonthStr();
     document.getElementById('currentMonthLabel').textContent = formatMonthLabel(curMonth);
 
-    const allDirect = getDirectExpenses();
-    const thisMonthItems = allDirect.filter(item => item.date && item.date.startsWith(curMonth));
-    const totalSum = thisMonthItems.reduce((s, i) => s + i.amount, 0);
+    // Overall Available Cash from starting balance + all received - all spent
+    const totalReceivedAll = state.incomes.reduce((s, i) => s + Number(i.amount), 0);
+    const totalSpentAll = state.expenses.reduce((s, e) => s + Number(e.amount), 0);
+    const availableNow = state.startingBalance + totalReceivedAll - totalSpentAll;
 
-    document.getElementById('currentMonthTotal').textContent = formatRs(totalSum);
-    document.getElementById('expCount').textContent =
-      `${thisMonthItems.length} item${thisMonthItems.length === 1 ? '' : 's'}`;
+    const availEl = document.getElementById('availableCash');
+    availEl.textContent = formatRs(availableNow);
+    availEl.className = 'card-value sm ' + (availableNow >= 0 ? 'text-green' : 'text-red');
+    document.getElementById('startingCashSub').textContent =
+      `Start (${state.startingDate || 'Today'}): ${formatRs(state.startingBalance)}`;
+
+    // Current month spend vs received
+    const monthExpenses = state.expenses.filter(e => e.date && e.date.startsWith(curMonth));
+    const monthIncomes = state.incomes.filter(i => i.date && i.date.startsWith(curMonth));
+
+    const monthSpendSum = monthExpenses.reduce((s, e) => s + Number(e.amount), 0);
+    const monthIncomeSum = monthIncomes.reduce((s, i) => s + Number(i.amount), 0);
+
+    document.getElementById('currentMonthTotal').textContent = formatRs(monthSpendSum);
+    document.getElementById('currentMonthIncomeSub').textContent = `Received: ${formatRs(monthIncomeSum)}`;
+
+    // Income vs Cost Match / Shortage Banner
+    const banner = document.getElementById('matchBanner');
+    const bannerText = document.getElementById('matchBannerText');
+    const bannerDiff = document.getElementById('matchBannerDiff');
+
+    const totalAvailableForMonth = state.startingBalance + monthIncomeSum;
+    const netDiff = availableNow;
+
+    if (netDiff < 0) {
+      banner.className = 'status-banner shortage';
+      bannerText.textContent = 'Shortage! Expenses exceed available funds by:';
+      bannerDiff.textContent = formatRs(Math.abs(netDiff));
+    } else if (monthSpendSum > monthIncomeSum && monthIncomeSum > 0) {
+      banner.className = 'status-banner shortage';
+      bannerText.textContent = 'Monthly spend exceeds this month received by:';
+      bannerDiff.textContent = formatRs(monthSpendSum - monthIncomeSum);
+    } else {
+      banner.className = 'status-banner surplus';
+      bannerText.textContent = 'Matched! Remaining balance buffer:';
+      bannerDiff.textContent = formatRs(netDiff);
+    }
+
+    // Combined chronological feed for this month
+    const combined = [
+      ...monthExpenses.map(e => ({ ...e, kind: 'expense' })),
+      ...monthIncomes.map(i => ({ ...i, kind: 'income' }))
+    ].sort((a, b) => b.date.localeCompare(a.date));
+
+    document.getElementById('expCount').textContent = `${combined.length} item${combined.length === 1 ? '' : 's'}`;
 
     const listEl = document.getElementById('expenseList');
-    if (thisMonthItems.length === 0) {
-      listEl.innerHTML = `<div class="empty-state">No expenses recorded for ${formatMonthLabel(curMonth)}.</div>`;
+    if (combined.length === 0) {
+      listEl.innerHTML = `<div class="empty-state">No expenses or received money logged for ${formatMonthLabel(curMonth)} yet.</div>`;
       return;
     }
 
-    listEl.innerHTML = thisMonthItems.map(item => `
-      <div class="list-item">
-        <div class="item-main">
-          <div class="item-title">${escapeHtml(item.note)}</div>
-          <div class="item-sub">
-            <span class="pill">${escapeHtml(item.category)}</span>
-            <span>${item.date}</span>
+    listEl.innerHTML = combined.map(item => {
+      const isInc = item.kind === 'income';
+      const title = item.note || (isInc ? item.source : item.category);
+      const badge = isInc ? item.source : item.category;
+      const delFn = isInc ? `deleteIncome('${item.id}')` : `deleteExpense('${item.id}')`;
+
+      return `
+        <div class="list-item">
+          <div class="item-main">
+            <div class="item-title">${escapeHtml(title)}</div>
+            <div class="item-sub">
+              <span class="pill ${isInc ? 'income' : ''}">${isInc ? '+ ' : ''}${escapeHtml(badge)}</span>
+              <span>${item.date}</span>
+            </div>
+          </div>
+          <div class="item-right">
+            <div class="item-amount ${isInc ? 'text-green' : ''}">${isInc ? '+ ' : ''}${formatRs(item.amount)}</div>
+            <button class="chip-btn del" onclick="${delFn}">Delete</button>
           </div>
         </div>
-        <div class="item-right">
-          <div class="item-amount">${formatRs(item.amount)}</div>
-          <button class="chip-btn del" onclick="deleteExpense('${item.id}')">Delete</button>
-        </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
   }
 
-  // --- FRIENDS DEBTS (PARTIAL & FULL PAYMENTS) ---
+  // --- FRIENDS DEBTS (WITH PERSON-WISE GROUPING & PARTIAL PAYMENTS) ---
   function setDebtType(type) {
     document.getElementById('debtType').value = type;
     const btnOwe = document.getElementById('btnTypeOwe');
     const btnLent = document.getElementById('btnTypeLent');
     btnOwe.className = type === 'borrowed' ? 'active-owe' : '';
     btnLent.className = type === 'lent' ? 'active-lent' : '';
+  }
+
+  function setFriendView(mode) {
+    friendViewMode = mode;
+    const btnRec = document.getElementById('btnViewRecords');
+    const btnGrp = document.getElementById('btnViewGrouped');
+    if (mode === 'records') {
+      btnRec.style.color = 'var(--accent)';
+      btnRec.style.borderColor = 'var(--accent)';
+      btnGrp.style.color = 'var(--muted)';
+      btnGrp.style.borderColor = 'var(--border)';
+    } else {
+      btnGrp.style.color = 'var(--accent)';
+      btnGrp.style.borderColor = 'var(--accent)';
+      btnRec.style.color = 'var(--muted)';
+      btnRec.style.borderColor = 'var(--border)';
+    }
+    renderDebts();
   }
 
   document.getElementById('debtForm').addEventListener('submit', function(e) {
@@ -1002,6 +1268,11 @@
   }
 
   function renderDebts() {
+    // Update friend autocomplete suggestions
+    const uniqueNames = Array.from(new Set(state.debts.map(d => d.person.trim()))).filter(Boolean);
+    document.getElementById('friendSuggestions').innerHTML =
+      uniqueNames.map(n => `<option value="${escapeHtml(n)}">`).join('');
+
     const oweRem = state.debts
       .filter(d => d.type === 'borrowed' && !d.settled)
       .reduce((s, d) => s + Math.max(0, d.amount - (d.paidAmount || 0)), 0);
@@ -1012,11 +1283,66 @@
 
     document.getElementById('totalOwe').textContent = formatRs(oweRem);
     document.getElementById('totalLent').textContent = formatRs(lentRem);
-    document.getElementById('debtCount').textContent = `${state.debts.length} record${state.debts.length === 1 ? '' : 's'}`;
 
     const listEl = document.getElementById('debtList');
     if (state.debts.length === 0) {
       listEl.innerHTML = `<div class="empty-state">No borrowed or lent records yet.</div>`;
+      return;
+    }
+
+    if (friendViewMode === 'grouped') {
+      const peopleMap = {};
+      state.debts.forEach(d => {
+        const key = d.person.trim().toLowerCase();
+        if (!peopleMap[key]) {
+          peopleMap[key] = { name: d.person.trim(), iOwe: 0, theyOwe: 0, count: 0 };
+        }
+        const rem = d.settled ? 0 : Math.max(0, d.amount - (d.paidAmount || 0));
+        if (d.type === 'borrowed') peopleMap[key].iOwe += rem;
+        else peopleMap[key].theyOwe += rem;
+        peopleMap[key].count += 1;
+      });
+
+      const groups = Object.values(peopleMap).sort((a, b) => {
+        const netA = Math.abs(a.theyOwe - a.iOwe);
+        const netB = Math.abs(b.theyOwe - b.iOwe);
+        return netB - netA;
+      });
+
+      listEl.innerHTML = groups.map(g => {
+        const net = g.theyOwe - g.iOwe; // positive = they owe you, negative = you owe them
+        const isSettled = Math.abs(net) < 0.01 && g.iOwe === 0 && g.theyOwe === 0;
+        let statusText = 'All settled';
+        let amtClass = 'text-green';
+        if (net > 0) {
+          statusText = `${escapeHtml(g.name)} owes you (Net)`;
+          amtClass = 'text-green';
+        } else if (net < 0) {
+          statusText = `You owe ${escapeHtml(g.name)} (Net)`;
+          amtClass = 'text-red';
+        }
+
+        return `
+          <div class="list-item ${isSettled ? 'settled' : ''}">
+            <div class="item-main">
+              <div class="item-title">${escapeHtml(g.name)}</div>
+              <div class="item-sub">
+                <span>${statusText}</span>
+                <span>• ${g.count} record${g.count === 1 ? '' : 's'}</span>
+              </div>
+              <div class="item-sub" style="margin-top:4px;">
+                <span style="color:var(--red);">I Owe: ${formatRs(g.iOwe)}</span>
+                <span>•</span>
+                <span style="color:var(--green);">Owes Me: ${formatRs(g.theyOwe)}</span>
+              </div>
+            </div>
+            <div class="item-right">
+              <div class="item-amount ${amtClass}">${formatRs(Math.abs(net))}</div>
+              <button class="chip-btn" onclick="setFriendView('records')">Details</button>
+            </div>
+          </div>
+        `;
+      }).join('');
       return;
     }
 
@@ -1163,33 +1489,48 @@
 
   // --- ALL-MONTHS ANALYSIS TAB ---
   function renderAnalysis() {
-    const allDirect = getDirectExpenses();
     const byMonth = {};
     const byCat = {};
-    let grandTotal = 0;
+    const byIncSource = {};
+    let grandSpent = 0;
 
-    allDirect.forEach(item => {
+    state.expenses.forEach(item => {
       if (!item.date) return;
       const m = item.date.slice(0, 7);
-      byMonth[m] = (byMonth[m] || 0) + item.amount;
-      byCat[item.category] = (byCat[item.category] || 0) + item.amount;
-      grandTotal += item.amount;
+      if (!byMonth[m]) byMonth[m] = { spent: 0, received: 0 };
+      byMonth[m].spent += Number(item.amount);
+      byCat[item.category] = (byCat[item.category] || 0) + Number(item.amount);
+      grandSpent += Number(item.amount);
+    });
+
+    state.incomes.forEach(item => {
+      if (!item.date) return;
+      const m = item.date.slice(0, 7);
+      if (!byMonth[m]) byMonth[m] = { spent: 0, received: 0 };
+      byMonth[m].received += Number(item.amount);
+      byIncSource[item.source] = (byIncSource[item.source] || 0) + Number(item.amount);
     });
 
     const histEl = document.getElementById('monthlyHistoryList');
     const months = Object.keys(byMonth).sort().reverse();
     if (months.length === 0) {
-      histEl.innerHTML = `<p style="font-size:0.84rem; color:var(--muted);">No monthly expenses recorded yet.</p>`;
+      histEl.innerHTML = `<p style="font-size:0.84rem; color:var(--muted);">No monthly activity recorded yet.</p>`;
     } else {
-      const maxMonth = Math.max(...months.map(m => byMonth[m]), 1);
+      const maxVal = Math.max(...months.map(m => Math.max(byMonth[m].spent, byMonth[m].received)), 1);
       histEl.innerHTML = months.map(m => {
-        const total = byMonth[m];
-        const pct = Math.round((total / maxMonth) * 100);
+        const d = byMonth[m];
+        const diff = d.received - d.spent;
+        const pct = Math.round((d.spent / maxVal) * 100);
         return `
           <div class="month-block">
             <div class="month-block-head">
               <span>${formatMonthLabel(m)}</span>
-              <span class="text-accent">${formatRs(total)}</span>
+              <span class="${diff >= 0 ? 'text-green' : 'text-red'}">
+                ${diff >= 0 ? '+' : '-'}${formatRs(Math.abs(diff))}
+              </span>
+            </div>
+            <div style="font-size:0.78rem; color:var(--muted); margin-bottom:4px;">
+              Received: <strong class="text-green">${formatRs(d.received)}</strong> • Spent: <strong class="text-accent">${formatRs(d.spent)}</strong>
             </div>
             <div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div>
           </div>
@@ -1198,12 +1539,12 @@
     }
 
     const catEl = document.getElementById('allTimeCategories');
-    if (grandTotal === 0) {
-      catEl.innerHTML = `<p style="font-size:0.84rem; color:var(--muted);">No category data yet.</p>`;
+    if (grandSpent === 0) {
+      catEl.innerHTML = `<p style="font-size:0.84rem; color:var(--muted);">No expense data yet.</p>`;
     } else {
       const sortedCats = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
       catEl.innerHTML = sortedCats.map(([cat, amt]) => {
-        const pct = Math.round((amt / grandTotal) * 100);
+        const pct = Math.round((amt / grandSpent) * 100);
         return `
           <div style="margin-bottom:10px;">
             <div style="display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:3px;">
@@ -1216,16 +1557,29 @@
       }).join('');
     }
 
+    const incEl = document.getElementById('incomeSummaryList');
+    const incEntries = Object.entries(byIncSource).sort((a, b) => b[1] - a[1]);
+    if (incEntries.length === 0) {
+      incEl.innerHTML = `<p style="font-size:0.84rem; color:var(--muted);">No received money recorded yet.</p>`;
+    } else {
+      incEl.innerHTML = incEntries.map(([src, amt]) => `
+        <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border); font-size:0.86rem;">
+          <span>${escapeHtml(src)}</span>
+          <strong class="text-green">${formatRs(amt)}</strong>
+        </div>
+      `).join('');
+    }
+
     const bytes = new Blob([JSON.stringify(state)]).size;
     const kb = (bytes / 1024).toFixed(2);
     document.getElementById('storageStats').textContent =
-      `Records: ${state.expenses.length} expenses, ${state.debts.length} friend records, ${state.wishlist.length} buy-list items • Local size: ${kb} KB`;
+      `Records: ${state.expenses.length} expenses, ${state.incomes.length} received entries, ${state.debts.length} friend records, ${state.wishlist.length} buy-list items • Local size: ${kb} KB`;
   }
 
   function exportJSON() {
     const payload = {
       app: 'PocketLedger',
-      schemaVersion: 2,
+      schemaVersion: 3,
       exportedAt: new Date().toISOString(),
       currency: 'LKR',
       data: state
@@ -1249,7 +1603,12 @@
         const parsed = JSON.parse(e.target.result);
         const data = parsed.data || parsed;
         if (Array.isArray(data.expenses) && Array.isArray(data.debts) && Array.isArray(data.wishlist)) {
-          state = data;
+          state.startingBalance = Number(data.startingBalance) || 0;
+          state.startingDate = data.startingDate || getTodayStr();
+          state.expenses = data.expenses;
+          state.incomes = Array.isArray(data.incomes) ? data.incomes : [];
+          state.debts = data.debts;
+          state.wishlist = data.wishlist;
           saveState();
           showToast('Backup restored!');
         } else {
@@ -1264,8 +1623,8 @@
   }
 
   function clearAllData() {
-    if (confirm('Delete ALL local expenses, friend records, and checklist items? Export a backup first!')) {
-      state = { expenses: [], debts: [], wishlist: [] };
+    if (confirm('Delete ALL local records? Export a backup first!')) {
+      state = { startingBalance: 0, startingDate: getTodayStr(), expenses: [], incomes: [], debts: [], wishlist: [] };
       saveState();
       showToast('All data cleared');
     }
@@ -1280,13 +1639,21 @@
   }
 
   function renderAll() {
-    renderExpenses();
+    renderCashflow();
     renderDebts();
     renderWishlist();
     renderAnalysis();
   }
 
+  // Register Offline Service Worker if hosted over HTTPS
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    });
+  }
+
   document.getElementById('expDate').value = getTodayStr();
+  document.getElementById('incDate').value = getTodayStr();
   document.getElementById('debtDate').value = getTodayStr();
   loadState();
   renderAll();
