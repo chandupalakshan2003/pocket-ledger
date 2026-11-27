@@ -10,26 +10,34 @@
 <title>PocketLedger</title>
 <link id="manifest-link" rel="manifest">
 <script>
-  // Generate standalone PWA manifest + SVG app icon inline (keeps everything in 1 file)
   (function() {
-    const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#161b22"/><rect x="96" y="144" width="320" height="224" rx="36" fill="#58a6ff"/><path d="M320 224h96v64h-96a32 32 0 0 1 0-64z" fill="#0d1117"/><circle cx="352" cy="256" r="14" fill="#3fb950"/></svg>`;
-    const iconUrl = 'data:image/svg+xml;base64,' + btoa(iconSvg);
-    const manifest = {
-      name: 'PocketLedger',
-      short_name: 'PocketLedger',
-      start_url: location.href.split('#')[0],
-      scope: './',
-      display: 'standalone',
-      orientation: 'portrait',
-      background_color: '#0d1117',
-      theme_color: '#0d1117',
-      icons: [
-        { src: iconUrl, sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' },
-        { src: iconUrl, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }
-      ]
-    };
-    const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
-    document.getElementById('manifest-link').href = URL.createObjectURL(blob);
+    // Uses custom 'app-icon.png' if uploaded to GitHub repo, otherwise uses clean SVG icon
+    const fallbackSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#161b22"/><rect x="96" y="144" width="320" height="224" rx="36" fill="#58a6ff"/><path d="M320 224h96v64h-96a32 32 0 0 1 0-64z" fill="#0d1117"/><circle cx="352" cy="256" r="14" fill="#3fb950"/></svg>`;
+    const fallbackUrl = 'data:image/svg+xml;base64,' + btoa(fallbackSvg);
+    const baseUrl = location.href.substring(0, location.href.lastIndexOf('/') + 1);
+
+    fetch('app-icon.png', { method: 'HEAD' })
+      .then(res => res.ok ? baseUrl + 'app-icon.png' : fallbackUrl)
+      .catch(() => fallbackUrl)
+      .then(iconSrc => {
+        const iconType = iconSrc.endsWith('.png') ? 'image/png' : 'image/svg+xml';
+        const manifest = {
+          name: 'PocketLedger',
+          short_name: 'PocketLedger',
+          start_url: location.href.split('#')[0],
+          scope: './',
+          display: 'standalone',
+          orientation: 'portrait',
+          background_color: '#0d1117',
+          theme_color: '#0d1117',
+          icons: [
+            { src: iconSrc, sizes: '192x192', type: iconType, purpose: 'any maskable' },
+            { src: iconSrc, sizes: '512x512', type: iconType, purpose: 'any maskable' }
+          ]
+        };
+        const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+        document.getElementById('manifest-link').href = URL.createObjectURL(blob);
+      });
   })();
 </script>
 <style>
@@ -63,7 +71,7 @@
     background-color: var(--bg);
     color: var(--text);
     line-height: 1.45;
-    padding-bottom: 84px;
+    padding-bottom: 86px;
     min-height: 100vh;
     user-select: none;
   }
@@ -130,7 +138,7 @@
   }
 
   .card-label {
-    font-size: 0.75rem;
+    font-size: 0.74rem;
     color: var(--muted);
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -141,47 +149,25 @@
   }
 
   .card-value {
-    font-size: 1.45rem;
+    font-size: 1.55rem;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
   }
 
   .card-value.sm {
-    font-size: 1.15rem;
+    font-size: 1.18rem;
+  }
+
+  .card-sub {
+    font-size: 0.76rem;
+    color: var(--muted);
+    margin-top: 4px;
   }
 
   .text-green { color: var(--green); }
   .text-red { color: var(--red); }
   .text-amber { color: var(--amber); }
   .text-accent { color: var(--accent); }
-
-  .month-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 8px 12px;
-    margin-bottom: 12px;
-  }
-
-  .month-bar select {
-    background: transparent;
-    border: none;
-    color: var(--text);
-    font-size: 0.95rem;
-    font-weight: 600;
-    outline: none;
-    cursor: pointer;
-    width: auto;
-    padding: 4px;
-  }
-
-  .month-bar select option {
-    background: var(--surface);
-    color: var(--text);
-  }
 
   .form-card {
     background: var(--surface);
@@ -325,12 +311,12 @@
     padding: 12px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     gap: 10px;
   }
 
   .list-item.settled, .list-item.bought {
-    opacity: 0.55;
+    opacity: 0.58;
   }
 
   .item-main {
@@ -341,9 +327,7 @@
   .item-title {
     font-size: 0.95rem;
     font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    word-break: break-word;
   }
 
   .item-title.strike {
@@ -353,7 +337,7 @@
   .item-sub {
     font-size: 0.78rem;
     color: var(--muted);
-    margin-top: 2px;
+    margin-top: 3px;
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
@@ -361,7 +345,7 @@
   }
 
   .pill {
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     font-weight: 600;
     padding: 1px 7px;
     border-radius: 6px;
@@ -379,6 +363,7 @@
     flex-direction: column;
     align-items: flex-end;
     gap: 6px;
+    flex-shrink: 0;
   }
 
   .item-amount {
@@ -389,7 +374,9 @@
 
   .item-actions {
     display: flex;
-    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 5px;
   }
 
   .chip-btn {
@@ -403,8 +390,13 @@
     cursor: pointer;
   }
 
+  .chip-btn.part {
+    border-color: rgba(88, 166, 255, 0.45);
+    color: var(--accent);
+  }
+
   .chip-btn.done {
-    border-color: rgba(63, 185, 80, 0.4);
+    border-color: rgba(63, 185, 80, 0.45);
     color: var(--green);
   }
 
@@ -413,25 +405,48 @@
     color: var(--red);
   }
 
-  .cat-row {
-    margin-bottom: 10px;
-  }
-  .cat-row-top {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.82rem;
-    margin-bottom: 4px;
-  }
+  /* Progress bars */
   .bar-bg {
     height: 6px;
     background: var(--bg);
     border-radius: 999px;
     overflow: hidden;
+    margin-top: 6px;
   }
   .bar-fill {
     height: 100%;
     background: var(--accent);
     border-radius: 999px;
+  }
+  .bar-fill.green { background: var(--green); }
+  .bar-fill.red { background: var(--red); }
+
+  .payment-history {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px dashed var(--border);
+    font-size: 0.73rem;
+    color: var(--muted);
+  }
+
+  .month-block {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .month-block:last-child {
+    border-bottom: none;
+  }
+  .month-block-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .month-block-cats {
+    font-size: 0.76rem;
+    color: var(--muted);
   }
 
   .empty-state {
@@ -444,6 +459,30 @@
     border-radius: var(--radius);
   }
 
+  /* Modal for Partial Payment */
+  .modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.72);
+    z-index: 60;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .modal-backdrop.open {
+    display: flex;
+  }
+  .modal-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    width: 100%;
+    max-width: 380px;
+  }
+
+  /* Bottom Navigation */
   nav.bottom-nav {
     position: fixed;
     bottom: 0;
@@ -468,13 +507,20 @@
     gap: 3px;
     font-size: 0.72rem;
     font-weight: 600;
-    padding: 4px 0;
+    padding: 3px 0;
     cursor: pointer;
   }
 
-  .nav-btn span.icon {
+  .nav-icon-img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    border-radius: 4px;
+  }
+
+  .nav-icon-emoji {
     font-size: 1.25rem;
-    line-height: 1;
+    line-height: 1.1;
   }
 
   .nav-btn.active {
@@ -483,7 +529,7 @@
 
   .toast {
     position: fixed;
-    bottom: 80px;
+    bottom: 82px;
     left: 50%;
     transform: translateX(-50%) translateY(20px);
     background: #238636;
@@ -495,7 +541,7 @@
     opacity: 0;
     pointer-events: none;
     transition: all 0.2s ease;
-    z-index: 50;
+    z-index: 70;
     box-shadow: 0 4px 16px rgba(0,0,0,0.4);
   }
 
@@ -513,21 +559,15 @@
 
 <div class="container">
 
-  <!-- TAB 1: EXPENSES -->
+  <!-- TAB 1: EXPENSES (DIRECT + BORROWED COMBINED) -->
   <section id="tab-expenses" class="tab-panel active">
-    <div class="month-bar">
-      <span style="font-size:0.8rem; color:var(--muted);">Viewing Month:</span>
-      <select id="monthSelector"></select>
-    </div>
-
     <div class="summary-grid">
-      <div class="card">
-        <div class="card-label">Selected Month</div>
-        <div class="card-value text-accent" id="selectedMonthTotal">Rs. 0</div>
-      </div>
-      <div class="card">
-        <div class="card-label">This Month (<span id="currentMonthLabel"></span>)</div>
-        <div class="card-value" id="currentMonthTotal">Rs. 0</div>
+      <div class="card full">
+        <div class="card-label">
+          <span>This Month Total Spend (<span id="currentMonthLabel"></span>)</span>
+        </div>
+        <div class="card-value text-accent" id="currentMonthTotal">Rs. 0</div>
+        <div class="card-sub" id="currentMonthSplit">Direct: Rs. 0 • Borrowed: Rs. 0</div>
       </div>
     </div>
 
@@ -566,33 +606,28 @@
       </form>
     </div>
 
-    <div class="card" id="categoryBreakdownCard" style="margin-bottom:14px; display:none;">
-      <div class="card-label" style="margin-bottom:10px;">Category Breakdown</div>
-      <div id="categoryBreakdown"></div>
-    </div>
-
     <div class="section-header">
-      <span>Transactions</span>
+      <span>This Month Transactions</span>
       <span id="expCount">0 items</span>
     </div>
     <div class="item-list" id="expenseList"></div>
   </section>
 
-  <!-- TAB 2: FRIENDS IOU LEDGER -->
+  <!-- TAB 2: FRIENDS IOU LEDGER (PARTIAL + FULL SETTLEMENTS) -->
   <section id="tab-friends" class="tab-panel">
     <div class="summary-grid">
       <div class="card">
-        <div class="card-label">I Borrowed (Owe)</div>
+        <div class="card-label">Remaining I Owe</div>
         <div class="card-value sm text-red" id="totalOwe">Rs. 0</div>
       </div>
       <div class="card">
-        <div class="card-label">Friends Owe Me</div>
+        <div class="card-label">Remaining Owed to Me</div>
         <div class="card-value sm text-green" id="totalLent">Rs. 0</div>
       </div>
     </div>
 
     <div class="form-card">
-      <div class="form-title">+ Record Friend Transaction</div>
+      <div class="form-title">+ Record Borrowed / Lent</div>
       <div class="segmented">
         <button type="button" id="btnTypeOwe" class="active-owe" onclick="setDebtType('borrowed')">I Borrowed (Owe)</button>
         <button type="button" id="btnTypeLent" onclick="setDebtType('lent')">Friend Borrowed</button>
@@ -605,8 +640,8 @@
             <input type="text" id="debtPerson" placeholder="e.g. Ch / Kasun" required>
           </div>
           <div class="form-group">
-            <label>Amount (Rs.)</label>
-            <input type="number" id="debtAmount" inputmode="decimal" step="any" min="0.01" placeholder="e.g. 1000" required>
+            <label>Total Amount (Rs.)</label>
+            <input type="number" id="debtAmount" inputmode="decimal" step="any" min="0.01" placeholder="e.g. 1500" required>
           </div>
         </div>
         <div class="form-row">
@@ -616,7 +651,7 @@
           </div>
           <div class="form-group">
             <label>Reason / Note</label>
-            <input type="text" id="debtNote" placeholder="e.g. Bus fare / Dinner">
+            <input type="text" id="debtNote" placeholder="e.g. Dinner / Bus">
           </div>
         </div>
         <button type="submit" class="btn btn-primary" style="margin-top:6px;">Save Record</button>
@@ -624,7 +659,7 @@
     </div>
 
     <div class="section-header">
-      <span>Active & Past Records</span>
+      <span>Installments & Balances</span>
       <span id="debtCount">0 records</span>
     </div>
     <div class="item-list" id="debtList"></div>
@@ -644,7 +679,7 @@
       <form id="wishForm">
         <div class="form-group">
           <label>Item Name</label>
-          <input type="text" id="wishName" placeholder="e.g. Laptop cooling pad / Earbuds case" required>
+          <input type="text" id="wishName" placeholder="e.g. Laptop stand / Earbuds case" required>
         </div>
         <div class="form-row">
           <div class="form-group">
@@ -671,17 +706,22 @@
     <div class="item-list" id="wishList"></div>
   </section>
 
-  <!-- TAB 4: DATA & AI PREP -->
-  <section id="tab-data" class="tab-panel">
+  <!-- TAB 4: ALL-MONTHS ANALYSIS & BACKUP -->
+  <section id="tab-analysis" class="tab-panel">
     <div class="card" style="margin-bottom:12px;">
-      <div class="card-label">Monthly History Overview</div>
-      <div id="monthlyHistoryList" style="margin-top:8px;"></div>
+      <div class="card-label">All Months Expense Comparison</div>
+      <div id="monthlyHistoryList" style="margin-top:6px;"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:12px;">
+      <div class="card-label">All-Time Category Breakdown</div>
+      <div id="allTimeCategories" style="margin-top:8px;"></div>
     </div>
 
     <div class="card" style="margin-bottom:12px;">
       <div class="card-label">Backup & Gemini API Data Export</div>
       <p style="font-size:0.82rem; color:var(--muted); margin:6px 0 12px;">
-        All data is saved locally in your phone's storage. Export a JSON backup regularly so you never lose records—and use this exact structured JSON when you connect the Gemini API in v2.
+        Export your structured JSON anytime for safe backup or to feed directly into the Gemini API for AI cost-reduction advice.
       </p>
       <button class="btn btn-primary" onclick="exportJSON()" style="margin-bottom:8px;">Export Backup (.json)</button>
       <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">Restore Backup (.json)</button>
@@ -697,24 +737,48 @@
 
 </div>
 
+<!-- PARTIAL PAYMENT MODAL -->
+<div class="modal-backdrop" id="partialModal">
+  <div class="modal-box">
+    <div class="form-title" id="partialModalTitle">Record Partial Payment</div>
+    <p style="font-size:0.82rem; color:var(--muted); margin-bottom:12px;" id="partialModalSub"></p>
+    <form id="partialForm">
+      <input type="hidden" id="partialDebtId">
+      <div class="form-group">
+        <label>Payment Amount (Rs.)</label>
+        <input type="number" id="partialAmount" inputmode="decimal" step="any" min="0.01" required>
+      </div>
+      <div class="form-group">
+        <label>Payment Date</label>
+        <input type="date" id="partialDate" required>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px;">
+        <button type="button" class="btn btn-secondary" onclick="closePartialModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Payment</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <div class="toast" id="toast">Saved!</div>
 
+<!-- BOTTOM NAV (Automatically uses nav-*.png from your GitHub repo if present, else emoji fallback) -->
 <nav class="bottom-nav">
   <button class="nav-btn active" onclick="switchTab('expenses', this)">
-    <span class="icon">💸</span>
+    <img src="nav-expenses.png" class="nav-icon-img" onerror="this.outerHTML='<span class=\'nav-icon-emoji\'>💸</span>'">
     <span>Expenses</span>
   </button>
   <button class="nav-btn" onclick="switchTab('friends', this)">
-    <span class="icon">🤝</span>
+    <img src="nav-friends.png" class="nav-icon-img" onerror="this.outerHTML='<span class=\'nav-icon-emoji\'>🤝</span>'">
     <span>Friends</span>
   </button>
   <button class="nav-btn" onclick="switchTab('wishlist', this)">
-    <span class="icon">🛒</span>
+    <img src="nav-wishlist.png" class="nav-icon-img" onerror="this.outerHTML='<span class=\'nav-icon-emoji\'>🛒</span>'">
     <span>Buy List</span>
   </button>
-  <button class="nav-btn" onclick="switchTab('data', this)">
-    <span class="icon">📊</span>
-    <span>History/Data</span>
+  <button class="nav-btn" onclick="switchTab('analysis', this)">
+    <img src="nav-analysis.png" class="nav-icon-img" onerror="this.outerHTML='<span class=\'nav-icon-emoji\'>📊</span>'">
+    <span>Analysis</span>
   </button>
 </nav>
 
@@ -735,6 +799,15 @@
         state.expenses = Array.isArray(parsed.expenses) ? parsed.expenses : [];
         state.debts = Array.isArray(parsed.debts) ? parsed.debts : [];
         state.wishlist = Array.isArray(parsed.wishlist) ? parsed.wishlist : [];
+        // Migrate older debt objects to include paidAmount & payments array
+        state.debts.forEach(d => {
+          if (typeof d.paidAmount !== 'number') {
+            d.paidAmount = d.settled ? d.amount : 0;
+          }
+          if (!Array.isArray(d.payments)) {
+            d.payments = [];
+          }
+        });
       }
     } catch (e) {
       console.error('Failed to load localStorage', e);
@@ -784,6 +857,32 @@
     btnEl.classList.add('active');
   }
 
+  // Combine direct expenses + "I Borrowed" records into unified spending items
+  function getCombinedExpenses() {
+    const direct = state.expenses.map(e => ({
+      id: e.id,
+      source: 'direct',
+      amount: Number(e.amount),
+      category: e.category,
+      date: e.date,
+      note: e.note || e.category
+    }));
+
+    const borrowedAsExpense = state.debts
+      .filter(d => d.type === 'borrowed')
+      .map(d => ({
+        id: d.id,
+        source: 'borrowed',
+        amount: Number(d.amount),
+        category: 'Borrowed (' + d.person + ')',
+        date: d.date,
+        note: d.note ? `${d.note} (from ${d.person})` : `Borrowed from ${d.person}`
+      }));
+
+    return [...direct, ...borrowedAsExpense].sort((a, b) => b.date.localeCompare(a.date));
+  }
+
+  // --- EXPENSES TAB ---
   document.getElementById('expenseForm').addEventListener('submit', function(e) {
     e.preventDefault();
     const amount = parseFloat(document.getElementById('expAmount').value);
@@ -803,7 +902,6 @@
 
     document.getElementById('expAmount').value = '';
     document.getElementById('expNote').value = '';
-    document.getElementById('monthSelector').value = date.slice(0, 7);
     saveState();
     showToast('Expense added');
   });
@@ -814,99 +912,62 @@
     showToast('Deleted');
   }
 
-  document.getElementById('monthSelector').addEventListener('change', renderExpenses);
-
-  function populateMonthSelector() {
-    const selector = document.getElementById('monthSelector');
-    const currentVal = selector.value || getCurrentMonthStr();
-    const months = new Set([getCurrentMonthStr()]);
-    state.expenses.forEach(e => {
-      if (e.date) months.add(e.date.slice(0, 7));
-    });
-
-    const sorted = Array.from(months).sort().reverse();
-    selector.innerHTML = sorted.map(m =>
-      `<option value="${m}">${formatMonthLabel(m)}</option>`
-    ).join('');
-
-    selector.value = sorted.includes(currentVal) ? currentVal : sorted[0];
-  }
-
   function renderExpenses() {
-    populateMonthSelector();
     const curMonth = getCurrentMonthStr();
-    const selMonth = document.getElementById('monthSelector').value;
-
     document.getElementById('currentMonthLabel').textContent = formatMonthLabel(curMonth);
 
-    const curTotal = state.expenses
-      .filter(e => e.date && e.date.startsWith(curMonth))
-      .reduce((sum, e) => sum + e.amount, 0);
+    const allCombined = getCombinedExpenses();
+    const thisMonthItems = allCombined.filter(item => item.date && item.date.startsWith(curMonth));
 
-    const filtered = state.expenses
-      .filter(e => e.date && e.date.startsWith(selMonth))
-      .sort((a, b) => b.date.localeCompare(a.date));
+    const directSum = thisMonthItems
+      .filter(i => i.source === 'direct')
+      .reduce((s, i) => s + i.amount, 0);
 
-    const selTotal = filtered.reduce((sum, e) => sum + e.amount, 0);
+    const borrowedSum = thisMonthItems
+      .filter(i => i.source === 'borrowed')
+      .reduce((s, i) => s + i.amount, 0);
 
-    document.getElementById('currentMonthTotal').textContent = formatRs(curTotal);
-    document.getElementById('selectedMonthTotal').textContent = formatRs(selTotal);
-    document.getElementById('expCount').textContent = `${filtered.length} item${filtered.length === 1 ? '' : 's'}`;
+    const totalSum = directSum + borrowedSum;
 
-    const catCard = document.getElementById('categoryBreakdownCard');
-    const catContainer = document.getElementById('categoryBreakdown');
-    if (filtered.length > 0 && selTotal > 0) {
-      catCard.style.display = 'block';
-      const byCat = {};
-      filtered.forEach(e => {
-        byCat[e.category] = (byCat[e.category] || 0) + e.amount;
-      });
-      const sortedCats = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
-      catContainer.innerHTML = sortedCats.map(([cat, amt]) => {
-        const pct = Math.round((amt / selTotal) * 100);
-        return `
-          <div class="cat-row">
-            <div class="cat-row-top">
-              <span>${cat}</span>
-              <span style="color:var(--muted);">${formatRs(amt)} (${pct}%)</span>
-            </div>
-            <div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div>
-          </div>
-        `;
-      }).join('');
-    } else {
-      catCard.style.display = 'none';
-    }
+    document.getElementById('currentMonthTotal').textContent = formatRs(totalSum);
+    document.getElementById('currentMonthSplit').textContent =
+      `Direct: ${formatRs(directSum)}  •  Borrowed: ${formatRs(borrowedSum)}`;
+    document.getElementById('expCount').textContent =
+      `${thisMonthItems.length} item${thisMonthItems.length === 1 ? '' : 's'}`;
 
-  const listEl = document.getElementById('expenseList');
-    if (filtered.length === 0) {
-      listEl.innerHTML = `<div class="empty-state">No expenses recorded for ${formatMonthLabel(selMonth)}.</div>`;
+    const listEl = document.getElementById('expenseList');
+    if (thisMonthItems.length === 0) {
+      listEl.innerHTML = `<div class="empty-state">No expenses recorded for ${formatMonthLabel(curMonth)}.</div>`;
       return;
     }
 
-    listEl.innerHTML = filtered.map(e => `
+    listEl.innerHTML = thisMonthItems.map(item => `
       <div class="list-item">
         <div class="item-main">
-          <div class="item-title">${escapeHtml(e.note || e.category)}</div>
+          <div class="item-title">${escapeHtml(item.note)}</div>
           <div class="item-sub">
-            <span class="pill">${escapeHtml(e.category)}</span>
-            <span>${e.date}</span>
+            <span class="pill ${item.source === 'borrowed' ? 'high' : ''}">
+              ${item.source === 'borrowed' ? 'BORROWED' : escapeHtml(item.category)}
+            </span>
+            <span>${item.date}</span>
           </div>
         </div>
         <div class="item-right">
-          <div class="item-amount">${formatRs(e.amount)}</div>
-          <button class="chip-btn del" onclick="deleteExpense('${e.id}')">Delete</button>
+          <div class="item-amount">${formatRs(item.amount)}</div>
+          ${item.source === 'direct'
+            ? `<button class="chip-btn del" onclick="deleteExpense('${item.id}')">Delete</button>`
+            : `<span style="font-size:0.68rem; color:var(--muted);">From Friends tab</span>`
+          }
         </div>
       </div>
     `).join('');
   }
 
+  // --- FRIENDS DEBTS (WITH PARTIAL & FULL PAYMENTS) ---
   function setDebtType(type) {
     document.getElementById('debtType').value = type;
-    const btnOwe = document.getElementById('btnTypeOwe');
-    const btnLent = document.getElementById('btnTypeLent');
-    btnOwe.className = type === 'borrowed' ? 'active-owe' : '';
-    btnLent.className = type === 'lent' ? 'active-lent' : '';
+    document.getElementById('btnTypeOwe').className = type === 'borrowed' ? 'active-owe' : '';
+    document.getElementById('btnTypeLent').className = type === 'lent' ? 'active-lent' : '';
   }
 
   document.getElementById('debtForm').addEventListener('submit', function(e) {
@@ -924,6 +985,8 @@
       type,
       person,
       amount,
+      paidAmount: 0,
+      payments: [],
       date,
       note,
       settled: false
@@ -933,15 +996,76 @@
     document.getElementById('debtAmount').value = '';
     document.getElementById('debtNote').value = '';
     saveState();
-    showToast('Record saved');
+    showToast(type === 'borrowed' ? 'Saved & added to expenses' : 'Record saved');
   });
 
-  function toggleDebtSettled(id) {
+  function openPartialModal(id) {
     const item = state.debts.find(d => d.id === id);
-    if (item) {
-      item.settled = !item.settled;
+    if (!item) return;
+    const remaining = Math.max(0, item.amount - (item.paidAmount || 0));
+    document.getElementById('partialDebtId').value = id;
+    document.getElementById('partialModalTitle').textContent =
+      item.type === 'borrowed' ? `Pay Part to ${item.person}` : `Receive Part from ${item.person}`;
+    document.getElementById('partialModalSub').textContent =
+      `Total: ${formatRs(item.amount)} • Remaining: ${formatRs(remaining)}`;
+    const amtInput = document.getElementById('partialAmount');
+    amtInput.max = remaining;
+    amtInput.value = '';
+    document.getElementById('partialDate').value = getTodayStr();
+    document.getElementById('partialModal').classList.add('open');
+    setTimeout(() => amtInput.focus(), 50);
+  }
+
+  function closePartialModal() {
+    document.getElementById('partialModal').classList.remove('open');
+  }
+
+  document.getElementById('partialForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const id = document.getElementById('partialDebtId').value;
+    const payAmt = parseFloat(document.getElementById('partialAmount').value);
+    const payDate = document.getElementById('partialDate').value;
+
+    const item = state.debts.find(d => d.id === id);
+    if (!item || !payAmt || payAmt <= 0) return;
+
+    const remaining = Math.max(0, item.amount - (item.paidAmount || 0));
+    const applied = Math.min(payAmt, remaining);
+
+    item.paidAmount = Number(((item.paidAmount || 0) + applied).toFixed(2));
+    item.payments = item.payments || [];
+    item.payments.push({ amount: applied, date: payDate });
+
+    if (item.paidAmount >= item.amount - 0.001) {
+      item.paidAmount = item.amount;
+      item.settled = true;
+    }
+
+    closePartialModal();
+    saveState();
+    showToast(item.settled ? 'Fully settled!' : `Recorded ${formatRs(applied)}`);
+  });
+
+  function fullSettleOrUndo(id) {
+    const item = state.debts.find(d => d.id === id);
+    if (!item) return;
+    if (item.settled) {
+      // Reopen and reset payments
+      item.settled = false;
+      item.paidAmount = 0;
+      item.payments = [];
       saveState();
-      showToast(item.settled ? 'Marked as settled' : 'Reopened');
+      showToast('Reopened balance');
+    } else {
+      const remaining = Math.max(0, item.amount - (item.paidAmount || 0));
+      if (remaining > 0) {
+        item.payments = item.payments || [];
+        item.payments.push({ amount: remaining, date: getTodayStr() });
+      }
+      item.paidAmount = item.amount;
+      item.settled = true;
+      saveState();
+      showToast('Marked as fully settled');
     }
   }
 
@@ -952,16 +1076,16 @@
   }
 
   function renderDebts() {
-    const oweTotal = state.debts
+    const oweRem = state.debts
       .filter(d => d.type === 'borrowed' && !d.settled)
-      .reduce((s, d) => s + d.amount, 0);
+      .reduce((s, d) => s + Math.max(0, d.amount - (d.paidAmount || 0)), 0);
 
-    const lentTotal = state.debts
+    const lentRem = state.debts
       .filter(d => d.type === 'lent' && !d.settled)
-      .reduce((s, d) => s + d.amount, 0);
+      .reduce((s, d) => s + Math.max(0, d.amount - (d.paidAmount || 0)), 0);
 
-    document.getElementById('totalOwe').textContent = formatRs(oweTotal);
-    document.getElementById('totalLent').textContent = formatRs(lentTotal);
+    document.getElementById('totalOwe').textContent = formatRs(oweRem);
+    document.getElementById('totalLent').textContent = formatRs(lentRem);
     document.getElementById('debtCount').textContent = `${state.debts.length} record${state.debts.length === 1 ? '' : 's'}`;
 
     const listEl = document.getElementById('debtList');
@@ -974,7 +1098,15 @@
 
     listEl.innerHTML = sorted.map(d => {
       const isOwe = d.type === 'borrowed';
+      const paid = d.paidAmount || 0;
+      const rem = Math.max(0, d.amount - paid);
+      const pct = d.amount > 0 ? Math.min(100, Math.round((paid / d.amount) * 100)) : 0;
       const label = isOwe ? `You owe ${escapeHtml(d.person)}` : `${escapeHtml(d.person)} owes you`;
+
+      const historyHtml = (d.payments && d.payments.length > 0)
+        ? `<div class="payment-history">Installments: ${d.payments.map(p => `${formatRs(p.amount)} (${p.date})`).join(', ')}</div>`
+        : '';
+
       return `
         <div class="list-item ${d.settled ? 'settled' : ''}">
           <div class="item-main">
@@ -984,12 +1116,21 @@
               <span>${d.date}</span>
               ${d.note ? `<span>• ${escapeHtml(d.note)}</span>` : ''}
             </div>
+            <div class="item-sub" style="margin-top:5px;">
+              <span>Paid: <strong>${formatRs(paid)}</strong> / ${formatRs(d.amount)}</span>
+              ${!d.settled && paid > 0 ? `<span style="color:var(--amber);">• Left: ${formatRs(rem)}</span>` : ''}
+            </div>
+            <div class="bar-bg">
+              <div class="bar-fill ${isOwe ? 'red' : 'green'}" style="width:${pct}%"></div>
+            </div>
+            ${historyHtml}
           </div>
           <div class="item-right">
-            <div class="item-amount ${isOwe ? 'text-red' : 'text-green'}">${formatRs(d.amount)}</div>
+            <div class="item-amount ${isOwe ? 'text-red' : 'text-green'}">${formatRs(rem)}</div>
             <div class="item-actions">
-              <button class="chip-btn ${d.settled ? '' : 'done'}" onclick="toggleDebtSettled('${d.id}')">
-                ${d.settled ? 'Undo' : 'Settle'}
+              ${!d.settled ? `<button class="chip-btn part" onclick="openPartialModal('${d.id}')">+ Pay Part</button>` : ''}
+              <button class="chip-btn ${d.settled ? '' : 'done'}" onclick="fullSettleOrUndo('${d.id}')">
+                ${d.settled ? 'Undo' : 'Full Settle'}
               </button>
               <button class="chip-btn del" onclick="deleteDebt('${d.id}')">✕</button>
             </div>
@@ -999,6 +1140,7 @@
     }).join('');
   }
 
+  // --- FUTURE BUY CHECKLIST ---
   document.getElementById('wishForm').addEventListener('submit', function(e) {
     e.preventDefault();
     const name = document.getElementById('wishName').value.trim();
@@ -1093,36 +1235,79 @@
     `).join('');
   }
 
-  function renderDataTab() {
+  // --- ALL-MONTHS ANALYSIS TAB ---
+  function renderAnalysis() {
+    const allCombined = getCombinedExpenses();
     const byMonth = {};
-    state.expenses.forEach(e => {
-      const m = e.date.slice(0, 7);
-      byMonth[m] = (byMonth[m] || 0) + e.amount;
+    const byCat = {};
+    let grandTotal = 0;
+
+    allCombined.forEach(item => {
+      if (!item.date) return;
+      const m = item.date.slice(0, 7);
+      if (!byMonth[m]) byMonth[m] = { total: 0, direct: 0, borrowed: 0 };
+      byMonth[m].total += item.amount;
+      if (item.source === 'borrowed') byMonth[m].borrowed += item.amount;
+      else byMonth[m].direct += item.amount;
+
+      const catKey = item.source === 'borrowed' ? 'Borrowed Spending' : item.category;
+      byCat[catKey] = (byCat[catKey] || 0) + item.amount;
+      grandTotal += item.amount;
     });
 
     const histEl = document.getElementById('monthlyHistoryList');
     const months = Object.keys(byMonth).sort().reverse();
     if (months.length === 0) {
-      histEl.innerHTML = `<p style="font-size:0.84rem; color:var(--muted);">No monthly history yet.</p>`;
+      histEl.innerHTML = `<p style="font-size:0.84rem; color:var(--muted);">No monthly expenses recorded yet.</p>`;
     } else {
-      histEl.innerHTML = months.map(m => `
-        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); font-size:0.9rem;">
-          <span>${formatMonthLabel(m)}</span>
-          <strong>${formatRs(byMonth[m])}</strong>
-        </div>
-      `).join('');
+      const maxMonth = Math.max(...months.map(m => byMonth[m].total), 1);
+      histEl.innerHTML = months.map(m => {
+        const d = byMonth[m];
+        const pct = Math.round((d.total / maxMonth) * 100);
+        return `
+          <div class="month-block">
+            <div class="month-block-head">
+              <span>${formatMonthLabel(m)}</span>
+              <span class="text-accent">${formatRs(d.total)}</span>
+            </div>
+            <div class="month-block-cats">
+              Direct: ${formatRs(d.direct)} • Borrowed: ${formatRs(d.borrowed)}
+            </div>
+            <div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    const catEl = document.getElementById('allTimeCategories');
+    if (grandTotal === 0) {
+      catEl.innerHTML = `<p style="font-size:0.84rem; color:var(--muted);">No category data yet.</p>`;
+    } else {
+      const sortedCats = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
+      catEl.innerHTML = sortedCats.map(([cat, amt]) => {
+        const pct = Math.round((amt / grandTotal) * 100);
+        return `
+          <div style="margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:3px;">
+              <span>${escapeHtml(cat)}</span>
+              <span style="color:var(--muted);">${formatRs(amt)} (${pct}%)</span>
+            </div>
+            <div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div>
+          </div>
+        `;
+      }).join('');
     }
 
     const bytes = new Blob([JSON.stringify(state)]).size;
     const kb = (bytes / 1024).toFixed(2);
     document.getElementById('storageStats').textContent =
-      `Records: ${state.expenses.length} expenses, ${state.debts.length} friend IOUs, ${state.wishlist.length} checklist items • Local size: ${kb} KB`;
+      `Records: ${state.expenses.length} direct expenses, ${state.debts.length} friend records, ${state.wishlist.length} buy-list items • Local size: ${kb} KB`;
   }
 
   function exportJSON() {
     const payload = {
       app: 'PocketLedger',
-      schemaVersion: 1,
+      schemaVersion: 2,
       exportedAt: new Date().toISOString(),
       currency: 'LKR',
       data: state
@@ -1180,7 +1365,7 @@
     renderExpenses();
     renderDebts();
     renderWishlist();
-    renderDataTab();
+    renderAnalysis();
   }
 
   document.getElementById('expDate').value = getTodayStr();
