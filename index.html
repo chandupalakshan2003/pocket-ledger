@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0d1117">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>PocketLedger — Offline Expense & IOU Tracker</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface-hover: #1f2630;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --accent: #58a6ff;
+    --accent-dim: rgba(88, 166, 255, 0.14);
+    --green: #3fb950;
+    --green-dim: rgba(63, 185, 80, 0.14);
+    --red: #f85149;
+    --red-dim: rgba(248, 81, 73, 0.14);
+    --amber: #d29922;
+    --amber-dim: rgba(210, 153, 34, 0.14);
+    --radius: 14px;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    line-height: 1.45;
+    padding-bottom: 84px;
+    min-height: 100vh;
+  }
+
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: rgba(13, 17, 23, 0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  header h1 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .badge-offline {
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--green-dim);
+    color: var(--green);
+    border: 1px solid rgba(63, 185, 80, 0.3);
+  }
+
+  .container {
+    max-width: 540px;
+    margin: 0 auto;
+    padding: 14px 14px 24px;
+  }
+
+  .tab-panel {
+    display: none;
+    animation: fadeIn 0.18s ease;
+  }
+
+  .tab-panel.active {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Summary Cards */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+  }
+
+  .card.full {
+    grid-column: span 2;
+  }
+
+  .card-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .card-value {
+    font-size: 1.45rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .card-value.sm {
+    font-size: 1.15rem;
+  }
+
+  .text-green { color: var(--green); }
+  .text-red { color: var(--red); }
+  .text-amber { color: var(--amber); }
+  .text-accent { color: var(--accent); }
+
+  /* Month Selector Bar */
+  .month-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 12px;
+    margin-bottom: 12px;
+  }
+
+  .month-bar select {
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 0.95rem;
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .month-bar select option {
+    background: var(--surface);
+    color: var(--text);
+  }
+
+  /* Forms */
+  .form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-bottom: 16px;
+  }
+
+  .form-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .form-group {
+    margin-bottom: 10px;
+  }
+
+  .form-row .form-group {
+    margin-bottom: 0;
+  }
+
+  label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  input, select {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  input:focus, select:focus {
+    border-color: var(--accent);
+  }
+
+  /* Segmented Control */
+  .segmented {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 3px;
+    margin-bottom: 12px;
+  }
+
+  .segmented button {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    padding: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .segmented button.active-owe {
+    background: var(--red-dim);
+    color: var(--red);
+  }
+
+  .segmented button.active-lent {
+    background: var(--green-dim);
+    color: var(--green);
+  }
+
+  .btn {
+    width: 100%;
+    padding: 11px 16px;
+    border-radius: 10px;
+    border: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+
+  .btn:active {
+    transform: scale(0.99);
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #0d1117;
+  }
+
+  .btn-secondary {
+    background: var(--surface-hover);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-danger {
+    background: var(--red-dim);
+    color: var(--red);
+    border: 1px solid rgba(248, 81, 73, 0.3);
+  }
+
+  /* List Items */
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 14px 0 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .item-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .list-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .list-item.settled, .list-item.bought {
+    opacity: 0.55;
+  }
+
+  .item-main {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .item-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .item-title.strike {
+    text-decoration: line-through;
+  }
+
+  .item-sub {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 2px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .pill {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 1px 7px;
+    border-radius: 6px;
+    background: var(--accent-dim);
+    color: var(--accent);
+  }
+
+  .pill.high { background: var(--red-dim); color: var(--red); }
+  .pill.medium { background: var(--amber-dim); color: var(--amber); }
+  .pill.low { background: var(--green-dim); color: var(--green); }
+
+  .item-right {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+  }
+
+  .item-amount {
+    font-weight: 700;
+    font-size: 0.98rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .item-actions {
+    display: flex;
+    gap: 6px;
+  }
+
+  .chip-btn {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 7px;
+    cursor: pointer;
+  }
+
+  .chip-btn.done {
+    border-color: rgba(63, 185, 80, 0.4);
+    color: var(--green);
+  }
+
+  .chip-btn.del:hover {
+    border-color: var(--red);
+    color: var(--red);
+  }
+
+  /* Category breakdown bars */
+  .cat-row {
+    margin-bottom: 10px;
+  }
+  .cat-row-top {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.82rem;
+    margin-bottom: 4px;
+  }
+  .bar-bg {
+    height: 6px;
+    background: var(--bg);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 999px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 28px 16px;
+    color: var(--muted);
+    font-size: 0.88rem;
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+  }
+
+  /* Bottom Navigation */
+  nav.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(22, 27, 34, 0.96);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+    z-index: 30;
+  }
+
+  .nav-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 4px 0;
+    cursor: pointer;
+  }
+
+  .nav-btn span.icon {
+    font-size: 1.2rem;
+    line-height: 1;
+  }
+
+  .nav-btn.active {
+    color: var(--accent);
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 76px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #238636;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.2s ease;
+    z-index: 50;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>PocketLedger</h1>
+</header>
+
+<div class="container">
+
+  <!-- TAB 1: EXPENSES -->
+  <section id="tab-expenses" class="tab-panel active">
+    <div class="month-bar">
+      <span style="font-size:0.8rem; color:var(--muted);">Viewing Month:</span>
+      <select id="monthSelector"></select>
+    </div>
+
+    <div class="summary-grid">
+      <div class="card">
+        <div class="card-label">Selected Month</div>
+        <div class="card-value text-accent" id="selectedMonthTotal">Rs. 0</div>
+      </div>
+      <div class="card">
+        <div class="card-label">This Month (<span id="currentMonthLabel"></span>)</div>
+        <div class="card-value" id="currentMonthTotal">Rs. 0</div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-title">+ Add Expense</div>
+      <form id="expenseForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Amount (Rs.)</label>
+            <input type="number" id="expAmount" inputmode="decimal" step="any" min="0.01" placeholder="e.g. 450" required>
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <select id="expCategory">
+              <option value="Food & Tea">Food & Tea</option>
+              <option value="Travel / Bus">Travel / Bus</option>
+              <option value="Boarding / Bills">Boarding / Bills</option>
+              <option value="Data & Reload">Data & Reload</option>
+              <option value="Uni / Study">Uni / Study</option>
+              <option value="Shopping">Shopping</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="expDate" required>
+          </div>
+          <div class="form-group">
+            <label>Note (Optional)</label>
+            <input type="text" id="expNote" placeholder="e.g. Lunch packet">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="margin-top:6px;">Save Expense</button>
+      </form>
+    </div>
+
+    <div class="card" id="categoryBreakdownCard" style="margin-bottom:14px; display:none;">
+      <div class="card-label" style="margin-bottom:10px;">Category Breakdown</div>
+      <div id="categoryBreakdown"></div>
+    </div>
+
+    <div class="section-header">
+      <span>Transactions</span>
+      <span id="expCount">0 items</span>
+    </div>
+    <div class="item-list" id="expenseList"></div>
+  </section>
+
+  <!-- TAB 2: FRIENDS IOU LEDGER -->
+  <section id="tab-friends" class="tab-panel">
+    <div class="summary-grid">
+      <div class="card">
+        <div class="card-label">I Borrowed (Owe)</div>
+        <div class="card-value sm text-red" id="totalOwe">Rs. 0</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Friends Owe Me</div>
+        <div class="card-value sm text-green" id="totalLent">Rs. 0</div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-title">+ Record Friend Transaction</div>
+      <div class="segmented">
+        <button type="button" id="btnTypeOwe" class="active-owe" onclick="setDebtType('borrowed')">I Borrowed (Owe)</button>
+        <button type="button" id="btnTypeLent" onclick="setDebtType('lent')">Friend Borrowed</button>
+      </div>
+      <form id="debtForm">
+        <input type="hidden" id="debtType" value="borrowed">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Friend Name / Initials</label>
+            <input type="text" id="debtPerson" placeholder="e.g. Ch / Kasun" required>
+          </div>
+          <div class="form-group">
+            <label>Amount (Rs.)</label>
+            <input type="number" id="debtAmount" inputmode="decimal" step="any" min="0.01" placeholder="e.g. 1000" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="debtDate" required>
+          </div>
+          <div class="form-group">
+            <label>Reason / Note</label>
+            <input type="text" id="debtNote" placeholder="e.g. Bus fare / Dinner">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="margin-top:6px;">Save Record</button>
+      </form>
+    </div>
+
+    <div class="section-header">
+      <span>Active & Past Records</span>
+      <span id="debtCount">0 records</span>
+    </div>
+    <div class="item-list" id="debtList"></div>
+  </section>
+
+  <!-- TAB 3: FUTURE BUY CHECKLIST -->
+  <section id="tab-wishlist" class="tab-panel">
+    <div class="summary-grid">
+      <div class="card full">
+        <div class="card-label">Estimated Total Needed (Pending Items)</div>
+        <div class="card-value text-amber" id="wishlistTotal">Rs. 0</div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-title">+ Add Future Buy Item</div>
+      <form id="wishForm">
+        <div class="form-group">
+          <label>Item Name</label>
+          <input type="text" id="wishName" placeholder="e.g. Laptop cooling pad / Earbuds case" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Est. Cost (Rs.)</label>
+            <input type="number" id="wishCost" inputmode="decimal" step="any" min="0" placeholder="e.g. 3500" required>
+          </div>
+          <div class="form-group">
+            <label>Priority</label>
+            <select id="wishPriority">
+              <option value="High">High</option>
+              <option value="Medium" selected>Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="margin-top:6px;">Add to Checklist</button>
+      </form>
+    </div>
+
+    <div class="section-header">
+      <span>Checklist</span>
+      <span id="wishCount">0 items</span>
+    </div>
+    <div class="item-list" id="wishList"></div>
+  </section>
+
+  <!-- TAB 4: DATA & AI PREP -->
+  <section id="tab-data" class="tab-panel">
+    <div class="card" style="margin-bottom:12px;">
+      <div class="card-label">Monthly History Overview</div>
+      <div id="monthlyHistoryList" style="margin-top:8px;"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:12px;">
+      <div class="card-label">Backup & Gemini API Data Export</div>
+      <p style="font-size:0.82rem; color:var(--muted); margin:6px 0 12px;">
+        All data is saved locally in your browser's <code>localStorage</code>. Export a JSON backup regularly so you never lose records—and use this exact structured JSON when you connect the Gemini API in v2.
+      </p>
+      <button class="btn btn-primary" onclick="exportJSON()" style="margin-bottom:8px;">Export Backup (.json)</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">Restore Backup (.json)</button>
+      <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importJSON(event)">
+    </div>
+
+    <div class="card">
+      <div class="card-label">Storage Info</div>
+      <p style="font-size:0.82rem; color:var(--muted); margin:6px 0 12px;" id="storageStats">Calculating...</p>
+      <button class="btn btn-danger" onclick="clearAllData()">Reset All Data</button>
+    </div>
+  </section>
+
+</div>
+
+<div class="toast" id="toast">Saved!</div>
+
+<nav class="bottom-nav">
+  <button class="nav-btn active" onclick="switchTab('expenses', this)">
+    <span class="icon">💸</span>
+    <span>Expenses</span>
+  </button>
+  <button class="nav-btn" onclick="switchTab('friends', this)">
+    <span class="icon">🤝</span>
+    <span>Friends</span>
+  </button>
+  <button class="nav-btn" onclick="switchTab('wishlist', this)">
+    <span class="icon">🛒</span>
+    <span>Buy List</span>
+  </button>
+  <button class="nav-btn" onclick="switchTab('data', this)">
+    <span class="icon">📊</span>
+    <span>History/Data</span>
+  </button>
+</nav>
+
+<script>
+  const STORAGE_KEY = 'pocket_ledger_v1';
+
+  let state = {
+    expenses: [],
+    debts: [],
+    wishlist: []
+  };
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        state.expenses = Array.isArray(parsed.expenses) ? parsed.expenses : [];
+        state.debts = Array.isArray(parsed.debts) ? parsed.debts : [];
+        state.wishlist = Array.isArray(parsed.wishlist) ? parsed.wishlist : [];
+      }
+    } catch (e) {
+      console.error('Failed to load localStorage', e);
+    }
+  }
+
+  function saveState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    renderAll();
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+  }
+
+  function formatRs(num) {
+    return 'Rs. ' + Number(num || 0).toLocaleString('en-US', {
+      minimumFractionDigits: num % 1 === 0 ? 0 : 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  function getTodayStr() {
+    const d = new Date();
+    const offset = d.getTimezoneOffset();
+    const local = new Date(d.getTime() - offset * 60000);
+    return local.toISOString().split('T')[0];
+  }
+
+  function getCurrentMonthStr() {
+    return getTodayStr().slice(0, 7); // YYYY-MM
+  }
+
+  function formatMonthLabel(ym) {
+    const [y, m] = ym.split('-');
+    const date = new Date(Number(y), Number(m) - 1, 1);
+    return date.toLocaleString('en-US', { month: 'short', year: 'numeric' });
+  }
+
+  function switchTab(tabName, btnEl) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tabName).classList.add('active');
+    btnEl.classList.add('active');
+  }
+
+  // --- EXPENSES ---
+  document.getElementById('expenseForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const amount = parseFloat(document.getElementById('expAmount').value);
+    const category = document.getElementById('expCategory').value;
+    const date = document.getElementById('expDate').value;
+    const note = document.getElementById('expNote').value.trim();
+
+    if (!amount || amount <= 0) return;
+
+    state.expenses.unshift({
+      id: Date.now().toString(),
+      amount,
+      category,
+      date,
+      note
+    });
+
+    document.getElementById('expAmount').value = '';
+    document.getElementById('expNote').value = '';
+    document.getElementById('monthSelector').value = date.slice(0, 7);
+    saveState();
+    showToast('Expense added');
+  });
+
+  function deleteExpense(id) {
+    state.expenses = state.expenses.filter(x => x.id !== id);
+    saveState();
+    showToast('Deleted');
+  }
+
+  document.getElementById('monthSelector').addEventListener('change', renderExpenses);
+
+  function populateMonthSelector() {
+    const selector = document.getElementById('monthSelector');
+    const currentVal = selector.value || getCurrentMonthStr();
+    const months = new Set([getCurrentMonthStr()]);
+    state.expenses.forEach(e => {
+      if (e.date) months.add(e.date.slice(0, 7));
+    });
+
+    const sorted = Array.from(months).sort().reverse();
+    selector.innerHTML = sorted.map(m =>
+      `<option value="${m}">${formatMonthLabel(m)}</option>`
+    ).join('');
+
+    selector.value = sorted.includes(currentVal) ? currentVal : sorted[0];
+  }
+
+  function renderExpenses() {
+    populateMonthSelector();
+    const curMonth = getCurrentMonthStr();
+    const selMonth = document.getElementById('monthSelector').value;
+
+    document.getElementById('currentMonthLabel').textContent = formatMonthLabel(curMonth);
+
+    const curTotal = state.expenses
+      .filter(e => e.date && e.date.startsWith(curMonth))
+      .reduce((sum, e) => sum + e.amount, 0);
+
+    const filtered = state.expenses
+      .filter(e => e.date && e.date.startsWith(selMonth))
+      .sort((a, b) => b.date.localeCompare(a.date));
+
+    const selTotal = filtered.reduce((sum, e) => sum + e.amount, 0);
+
+    document.getElementById('currentMonthTotal').textContent = formatRs(curTotal);
+    document.getElementById('selectedMonthTotal').textContent = formatRs(selTotal);
+    document.getElementById('expCount').textContent = `${filtered.length} item${filtered.length === 1 ? '' : 's'}`;
+
+    // Category breakdown
+    const catCard = document.getElementById('categoryBreakdownCard');
+    const catContainer = document.getElementById('categoryBreakdown');
+    if (filtered.length > 0 && selTotal > 0) {
+      catCard.style.display = 'block';
+      const byCat = {};
+      filtered.forEach(e => {
+        byCat[e.category] = (byCat[e.category] || 0) + e.amount;
+      });
+      const sortedCats = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
+      catContainer.innerHTML = sortedCats.map(([cat, amt]) => {
+        const pct = Math.round((amt / selTotal) * 100);
+        return `
+          <div class="cat-row">
+            <div class="cat-row-top">
+              <span>${cat}</span>
+              <span style="color:var(--muted);">${formatRs(amt)} (${pct}%)</span>
+            </div>
+            <div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div>
+          </div>
+        `;
+      }).join('');
+    } else {
+      catCard.style.display = 'none';
+    }
+
+    const listEl = document.getElementById('expenseList');
+    if (filtered.length === 0) {
+      listEl.innerHTML = `<div class="empty-state">No expenses recorded for ${formatMonthLabel(selMonth)}.</div>`;
+      return;
+    }
+
+    listEl.innerHTML = filtered.map(e => `
+      <div class="list-item">
+        <div class="item-main">
+          <div class="item-title">${escapeHtml(e.note || e.category)}</div>
+          <div class="item-sub">
+            <span class="pill">${escapeHtml(e.category)}</span>
+            <span>${e.date}</span>
+          </div>
+        </div>
+        <div class="item-right">
+          <div class="item-amount">${formatRs(e.amount)}</div>
+          <button class="chip-btn del" onclick="deleteExpense('${e.id}')">Delete</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // --- FRIENDS DEBTS ---
+  function setDebtType(type) {
+    document.getElementById('debtType').value = type;
+    const btnOwe = document.getElementById('btnTypeOwe');
+    const btnLent = document.getElementById('btnTypeLent');
+    btnOwe.className = type === 'borrowed' ? 'active-owe' : '';
+    btnLent.className = type === 'lent' ? 'active-lent' : '';
+  }
+
+  document.getElementById('debtForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const type = document.getElementById('debtType').value;
+    const person = document.getElementById('debtPerson').value.trim();
+    const amount = parseFloat(document.getElementById('debtAmount').value);
+    const date = document.getElementById('debtDate').value;
+    const note = document.getElementById('debtNote').value.trim();
+
+    if (!person || !amount || amount <= 0) return;
+
+    state.debts.unshift({
+      id: Date.now().toString(),
+      type,
+      person,
+      amount,
+      date,
+      note,
+      settled: false
+    });
+
+    document.getElementById('debtPerson').value = '';
+    document.getElementById('debtAmount').value = '';
+    document.getElementById('debtNote').value = '';
+    saveState();
+    showToast('Record saved');
+  });
+
+  function toggleDebtSettled(id) {
+    const item = state.debts.find(d => d.id === id);
+    if (item) {
+      item.settled = !item.settled;
+      saveState();
+      showToast(item.settled ? 'Marked as settled' : 'Reopened');
+    }
+  }
+
+  function deleteDebt(id) {
+    state.debts = state.debts.filter(d => d.id !== id);
+    saveState();
+    showToast('Deleted');
+  }
+
+  function renderDebts() {
+    const oweTotal = state.debts
+      .filter(d => d.type === 'borrowed' && !d.settled)
+      .reduce((s, d) => s + d.amount, 0);
+
+    const lentTotal = state.debts
+      .filter(d => d.type === 'lent' && !d.settled)
+      .reduce((s, d) => s + d.amount, 0);
+
+    document.getElementById('totalOwe').textContent = formatRs(oweTotal);
+    document.getElementById('totalLent').textContent = formatRs(lentTotal);
+    document.getElementById('debtCount').textContent = `${state.debts.length} record${state.debts.length === 1 ? '' : 's'}`;
+
+    const listEl = document.getElementById('debtList');
+    if (state.debts.length === 0) {
+      listEl.innerHTML = `<div class="empty-state">No borrowed or lent records yet.</div>`;
+      return;
+    }
+
+    const sorted = [...state.debts].sort((a, b) => Number(a.settled) - Number(b.settled));
+
+    listEl.innerHTML = sorted.map(d => {
+      const isOwe = d.type === 'borrowed';
+      const label = isOwe ? `You owe ${escapeHtml(d.person)}` : `${escapeHtml(d.person)} owes you`;
+      return `
+        <div class="list-item ${d.settled ? 'settled' : ''}">
+          <div class="item-main">
+            <div class="item-title ${d.settled ? 'strike' : ''}">${label}</div>
+            <div class="item-sub">
+              <span class="pill ${isOwe ? 'high' : 'low'}">${isOwe ? 'BORROWED' : 'LENT'}</span>
+              <span>${d.date}</span>
+              ${d.note ? `<span>• ${escapeHtml(d.note)}</span>` : ''}
+            </div>
+          </div>
+          <div class="item-right">
+            <div class="item-amount ${isOwe ? 'text-red' : 'text-green'}">${formatRs(d.amount)}</div>
+            <div class="item-actions">
+              <button class="chip-btn ${d.settled ? '' : 'done'}" onclick="toggleDebtSettled('${d.id}')">
+                ${d.settled ? 'Undo' : 'Settle'}
+              </button>
+              <button class="chip-btn del" onclick="deleteDebt('${d.id}')">✕</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // --- FUTURE BUY CHECKLIST ---
+  document.getElementById('wishForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const name = document.getElementById('wishName').value.trim();
+    const cost = parseFloat(document.getElementById('wishCost').value) || 0;
+    const priority = document.getElementById('wishPriority').value;
+
+    if (!name) return;
+
+    state.wishlist.unshift({
+      id: Date.now().toString(),
+      name,
+      cost,
+      priority,
+      bought: false,
+      createdAt: getTodayStr()
+    });
+
+    document.getElementById('wishName').value = '';
+    document.getElementById('wishCost').value = '';
+    saveState();
+    showToast('Added to buy list');
+  });
+
+  function toggleWishBought(id) {
+    const item = state.wishlist.find(w => w.id === id);
+    if (item) {
+      item.bought = !item.bought;
+      saveState();
+      showToast(item.bought ? 'Checked off!' : 'Unchecked');
+    }
+  }
+
+  function moveWishToExpense(id) {
+    const item = state.wishlist.find(w => w.id === id);
+    if (!item) return;
+    item.bought = true;
+    state.expenses.unshift({
+      id: Date.now().toString(),
+      amount: item.cost,
+      category: 'Shopping',
+      date: getTodayStr(),
+      note: item.name
+    });
+    saveState();
+    showToast('Bought & logged to expenses!');
+  }
+
+  function deleteWish(id) {
+    state.wishlist = state.wishlist.filter(w => w.id !== id);
+    saveState();
+    showToast('Removed');
+  }
+
+  function renderWishlist() {
+    const pendingTotal = state.wishlist
+      .filter(w => !w.bought)
+      .reduce((s, w) => s + w.cost, 0);
+
+    document.getElementById('wishlistTotal').textContent = formatRs(pendingTotal);
+    document.getElementById('wishCount').textContent = `${state.wishlist.length} item${state.wishlist.length === 1 ? '' : 's'}`;
+
+    const listEl = document.getElementById('wishList');
+    if (state.wishlist.length === 0) {
+      listEl.innerHTML = `<div class="empty-state">Your future buy checklist is empty.</div>`;
+      return;
+    }
+
+    const rank = { High: 1, Medium: 2, Low: 3 };
+    const sorted = [...state.wishlist].sort((a, b) => {
+      if (a.bought !== b.bought) return Number(a.bought) - Number(b.bought);
+      return (rank[a.priority] || 9) - (rank[b.priority] || 9);
+    });
+
+    listEl.innerHTML = sorted.map(w => `
+      <div class="list-item ${w.bought ? 'bought' : ''}">
+        <div class="item-main">
+          <div class="item-title ${w.bought ? 'strike' : ''}">${escapeHtml(w.name)}</div>
+          <div class="item-sub">
+            <span class="pill ${w.priority.toLowerCase()}">${w.priority}</span>
+            <span>Added ${w.createdAt}</span>
+          </div>
+        </div>
+        <div class="item-right">
+          <div class="item-amount text-amber">${formatRs(w.cost)}</div>
+          <div class="item-actions">
+            ${!w.bought && w.cost > 0 ? `<button class="chip-btn done" onclick="moveWishToExpense('${w.id}')">Buy & Log</button>` : ''}
+            <button class="chip-btn" onclick="toggleWishBought('${w.id}')">${w.bought ? 'Undo' : 'Check'}</button>
+            <button class="chip-btn del" onclick="deleteWish('${w.id}')">✕</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // --- DATA & HISTORY TAB ---
+  function renderDataTab() {
+    const byMonth = {};
+    state.expenses.forEach(e => {
+      const m = e.date.slice(0, 7);
+      byMonth[m] = (byMonth[m] || 0) + e.amount;
+    });
+
+    const histEl = document.getElementById('monthlyHistoryList');
+    const months = Object.keys(byMonth).sort().reverse();
+    if (months.length === 0) {
+      histEl.innerHTML = `<p style="font-size:0.84rem; color:var(--muted);">No monthly history yet.</p>`;
+    } else {
+      histEl.innerHTML = months.map(m => `
+        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); font-size:0.9rem;">
+          <span>${formatMonthLabel(m)}</span>
+          <strong>${formatRs(byMonth[m])}</strong>
+        </div>
+      `).join('');
+    }
+
+    const bytes = new Blob([JSON.stringify(state)]).size;
+    const kb = (bytes / 1024).toFixed(2);
+    document.getElementById('storageStats').textContent =
+      `Records: ${state.expenses.length} expenses, ${state.debts.length} friend IOUs, ${state.wishlist.length} checklist items • Local size: ${kb} KB`;
+  }
+
+  function exportJSON() {
+    const payload = {
+      app: 'PocketLedger',
+      schemaVersion: 1,
+      exportedAt: new Date().toISOString(),
+      currency: 'LKR',
+      data: state
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `pocket-ledger-backup-${getTodayStr()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('JSON exported');
+  }
+
+  function importJSON(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const parsed = JSON.parse(e.target.result);
+        const data = parsed.data || parsed;
+        if (Array.isArray(data.expenses) && Array.isArray(data.debts) && Array.isArray(data.wishlist)) {
+          state = data;
+          saveState();
+          showToast('Backup restored!');
+        } else {
+          alert('Invalid backup file format.');
+        }
+      } catch (err) {
+        alert('Could not read JSON file.');
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+  }
+
+  function clearAllData() {
+    if (confirm('Delete ALL local expenses, friend records, and checklist items? Export a backup first!')) {
+      state = { expenses: [], debts: [], wishlist: [] };
+      saveState();
+      showToast('All data cleared');
+    }
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function renderAll() {
+    renderExpenses();
+    renderDebts();
+    renderWishlist();
+    renderDataTab();
+  }
+
+  // Init
+  document.getElementById('expDate').value = getTodayStr();
+  document.getElementById('debtDate').value = getTodayStr();
+  loadState();
+  renderAll();
+</script>
+</body>
+</html>
