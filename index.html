@@ -8,38 +8,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>PocketLedger</title>
-<link id="manifest-link" rel="manifest">
-<script>
-  (function() {
-    // Uses custom 'app-icon.png' if uploaded to GitHub repo, otherwise uses clean SVG icon
-    const fallbackSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#161b22"/><rect x="96" y="144" width="320" height="224" rx="36" fill="#58a6ff"/><path d="M320 224h96v64h-96a32 32 0 0 1 0-64z" fill="#0d1117"/><circle cx="352" cy="256" r="14" fill="#3fb950"/></svg>`;
-    const fallbackUrl = 'data:image/svg+xml;base64,' + btoa(fallbackSvg);
-    const baseUrl = location.href.substring(0, location.href.lastIndexOf('/') + 1);
-
-    fetch('app-icon.png', { method: 'HEAD' })
-      .then(res => res.ok ? baseUrl + 'app-icon.png' : fallbackUrl)
-      .catch(() => fallbackUrl)
-      .then(iconSrc => {
-        const iconType = iconSrc.endsWith('.png') ? 'image/png' : 'image/svg+xml';
-        const manifest = {
-          name: 'PocketLedger',
-          short_name: 'PocketLedger',
-          start_url: location.href.split('#')[0],
-          scope: './',
-          display: 'standalone',
-          orientation: 'portrait',
-          background_color: '#0d1117',
-          theme_color: '#0d1117',
-          icons: [
-            { src: iconSrc, sizes: '192x192', type: iconType, purpose: 'any maskable' },
-            { src: iconSrc, sizes: '512x512', type: iconType, purpose: 'any maskable' }
-          ]
-        };
-        const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
-        document.getElementById('manifest-link').href = URL.createObjectURL(blob);
-      });
-  })();
-</script>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/png" href="./app-icon.png">
+<link rel="apple-touch-icon" href="./app-icon.png">
 <style>
   :root {
     --bg: #0d1117;
