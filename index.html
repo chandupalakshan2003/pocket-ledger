@@ -828,16 +828,17 @@
     btnEl.classList.add('active');
   }
 
-  // Combine direct expenses + "I Borrowed" records into unified spending items
+  // Only include direct expenses (keeps borrowed IOUs separate in the Friends tab)
   function getCombinedExpenses() {
-    const direct = state.expenses.map(e => ({
+    return state.expenses.map(e => ({
       id: e.id,
       source: 'direct',
       amount: Number(e.amount),
       category: e.category,
       date: e.date,
       note: e.note || e.category
-    }));
+    })).sort((a, b) => b.date.localeCompare(a.date));
+  }
 
     const borrowedAsExpense = state.debts
       .filter(d => d.type === 'borrowed')
@@ -901,8 +902,6 @@
     const totalSum = directSum + borrowedSum;
 
     document.getElementById('currentMonthTotal').textContent = formatRs(totalSum);
-    document.getElementById('currentMonthSplit').textContent =
-      `Direct: ${formatRs(directSum)}  •  Borrowed: ${formatRs(borrowedSum)}`;
     document.getElementById('expCount').textContent =
       `${thisMonthItems.length} item${thisMonthItems.length === 1 ? '' : 's'}`;
 
