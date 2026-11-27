@@ -129,12 +129,6 @@
     font-size: 1.18rem;
   }
 
-  .card-sub {
-    font-size: 0.76rem;
-    color: var(--muted);
-    margin-top: 4px;
-  }
-
   .text-green { color: var(--green); }
   .text-red { color: var(--red); }
   .text-amber { color: var(--amber); }
@@ -376,7 +370,6 @@
     color: var(--red);
   }
 
-  /* Progress bars */
   .bar-bg {
     height: 6px;
     background: var(--bg);
@@ -415,10 +408,6 @@
     font-weight: 700;
     margin-bottom: 4px;
   }
-  .month-block-cats {
-    font-size: 0.76rem;
-    color: var(--muted);
-  }
 
   .empty-state {
     text-align: center;
@@ -430,7 +419,6 @@
     border-radius: var(--radius);
   }
 
-  /* Modal for Partial Payment */
   .modal-backdrop {
     display: none;
     position: fixed;
@@ -453,7 +441,6 @@
     max-width: 380px;
   }
 
-  /* Bottom Navigation */
   nav.bottom-nav {
     position: fixed;
     bottom: 0;
@@ -530,7 +517,7 @@
 
 <div class="container">
 
-  <!-- TAB 1: EXPENSES (DIRECT + BORROWED COMBINED) -->
+  <!-- TAB 1: EXPENSES -->
   <section id="tab-expenses" class="tab-panel active">
     <div class="summary-grid">
       <div class="card full">
@@ -538,7 +525,6 @@
           <span>This Month Total Spend (<span id="currentMonthLabel"></span>)</span>
         </div>
         <div class="card-value text-accent" id="currentMonthTotal">Rs. 0</div>
-        <div class="card-sub" id="currentMonthSplit">Direct: Rs. 0 • Borrowed: Rs. 0</div>
       </div>
     </div>
 
@@ -733,22 +719,21 @@
 
 <div class="toast" id="toast">Saved!</div>
 
-<!-- BOTTOM NAV (Automatically uses nav-*.png from your GitHub repo if present, else emoji fallback) -->
 <nav class="bottom-nav">
   <button class="nav-btn active" onclick="switchTab('expenses', this)">
-    <img src="nav-expenses.png" class="nav-icon-img" onerror="this.outerHTML='<span class=\'nav-icon-emoji\'>💸</span>'">
+    <img src="nav-expenses.png" class="nav-icon-img" onerror="this.outerHTML='<span class='nav-icon-emoji'>💸</span>'">
     <span>Expenses</span>
   </button>
   <button class="nav-btn" onclick="switchTab('friends', this)">
-    <img src="nav-friends.png" class="nav-icon-img" onerror="this.outerHTML='<span class=\'nav-icon-emoji\'>🤝</span>'">
+    <img src="nav-friends.png" class="nav-icon-img" onerror="this.outerHTML='<span class='nav-icon-emoji'>🤝</span>'">
     <span>Friends</span>
   </button>
   <button class="nav-btn" onclick="switchTab('wishlist', this)">
-    <img src="nav-wishlist.png" class="nav-icon-img" onerror="this.outerHTML='<span class=\'nav-icon-emoji\'>🛒</span>'">
+    <img src="nav-wishlist.png" class="nav-icon-img" onerror="this.outerHTML='<span class='nav-icon-emoji'>🛒</span>'">
     <span>Buy List</span>
   </button>
   <button class="nav-btn" onclick="switchTab('analysis', this)">
-    <img src="nav-analysis.png" class="nav-icon-img" onerror="this.outerHTML='<span class=\'nav-icon-emoji\'>📊</span>'">
+    <img src="nav-analysis.png" class="nav-icon-img" onerror="this.outerHTML='<span class='nav-icon-emoji'>📊</span>'">
     <span>Analysis</span>
   </button>
 </nav>
@@ -770,7 +755,6 @@
         state.expenses = Array.isArray(parsed.expenses) ? parsed.expenses : [];
         state.debts = Array.isArray(parsed.debts) ? parsed.debts : [];
         state.wishlist = Array.isArray(parsed.wishlist) ? parsed.wishlist : [];
-        // Migrate older debt objects to include paidAmount & payments array
         state.debts.forEach(d => {
           if (typeof d.paidAmount !== 'number') {
             d.paidAmount = d.settled ? d.amount : 0;
@@ -828,30 +812,15 @@
     btnEl.classList.add('active');
   }
 
-  // Only include direct expenses (keeps borrowed IOUs separate in the Friends tab)
-  function getCombinedExpenses() {
+  // Only include direct expenses (borrowed IOUs stay separate in Friends tab)
+  function getDirectExpenses() {
     return state.expenses.map(e => ({
       id: e.id,
-      source: 'direct',
       amount: Number(e.amount),
       category: e.category,
       date: e.date,
       note: e.note || e.category
     })).sort((a, b) => b.date.localeCompare(a.date));
-  }
-
-    const borrowedAsExpense = state.debts
-      .filter(d => d.type === 'borrowed')
-      .map(d => ({
-        id: d.id,
-        source: 'borrowed',
-        amount: Number(d.amount),
-        category: 'Borrowed (' + d.person + ')',
-        date: d.date,
-        note: d.note ? `${d.note} (from ${d.person})` : `Borrowed from ${d.person}`
-      }));
-
-    return [...direct, ...borrowedAsExpense].sort((a, b) => b.date.localeCompare(a.date));
   }
 
   // --- EXPENSES TAB ---
@@ -888,18 +857,9 @@
     const curMonth = getCurrentMonthStr();
     document.getElementById('currentMonthLabel').textContent = formatMonthLabel(curMonth);
 
-    const allCombined = getCombinedExpenses();
-    const thisMonthItems = allCombined.filter(item => item.date && item.date.startsWith(curMonth));
-
-    const directSum = thisMonthItems
-      .filter(i => i.source === 'direct')
-      .reduce((s, i) => s + i.amount, 0);
-
-    const borrowedSum = thisMonthItems
-      .filter(i => i.source === 'borrowed')
-      .reduce((s, i) => s + i.amount, 0);
-
-    const totalSum = directSum + borrowedSum;
+    const allDirect = getDirectExpenses();
+    const thisMonthItems = allDirect.filter(item => item.date && item.date.startsWith(curMonth));
+    const totalSum = thisMonthItems.reduce((s, i) => s + i.amount, 0);
 
     document.getElementById('currentMonthTotal').textContent = formatRs(totalSum);
     document.getElementById('expCount').textContent =
@@ -916,28 +876,25 @@
         <div class="item-main">
           <div class="item-title">${escapeHtml(item.note)}</div>
           <div class="item-sub">
-            <span class="pill ${item.source === 'borrowed' ? 'high' : ''}">
-              ${item.source === 'borrowed' ? 'BORROWED' : escapeHtml(item.category)}
-            </span>
+            <span class="pill">${escapeHtml(item.category)}</span>
             <span>${item.date}</span>
           </div>
         </div>
         <div class="item-right">
           <div class="item-amount">${formatRs(item.amount)}</div>
-          ${item.source === 'direct'
-            ? `<button class="chip-btn del" onclick="deleteExpense('${item.id}')">Delete</button>`
-            : `<span style="font-size:0.68rem; color:var(--muted);">From Friends tab</span>`
-          }
+          <button class="chip-btn del" onclick="deleteExpense('${item.id}')">Delete</button>
         </div>
       </div>
     `).join('');
   }
 
-  // --- FRIENDS DEBTS (WITH PARTIAL & FULL PAYMENTS) ---
+  // --- FRIENDS DEBTS (PARTIAL & FULL PAYMENTS) ---
   function setDebtType(type) {
     document.getElementById('debtType').value = type;
-    document.getElementById('btnTypeOwe').className = type === 'borrowed' ? 'active-owe' : '';
-    document.getElementById('btnTypeLent').className = type === 'lent' ? 'active-lent' : '';
+    const btnOwe = document.getElementById('btnTypeOwe');
+    const btnLent = document.getElementById('btnTypeLent');
+    btnOwe.className = type === 'borrowed' ? 'active-owe' : '';
+    btnLent.className = type === 'lent' ? 'active-lent' : '';
   }
 
   document.getElementById('debtForm').addEventListener('submit', function(e) {
@@ -966,7 +923,7 @@
     document.getElementById('debtAmount').value = '';
     document.getElementById('debtNote').value = '';
     saveState();
-    showToast(type === 'borrowed' ? 'Saved & added to expenses' : 'Record saved');
+    showToast('Record saved');
   });
 
   function openPartialModal(id) {
@@ -1020,7 +977,6 @@
     const item = state.debts.find(d => d.id === id);
     if (!item) return;
     if (item.settled) {
-      // Reopen and reset payments
       item.settled = false;
       item.paidAmount = 0;
       item.payments = [];
@@ -1207,21 +1163,16 @@
 
   // --- ALL-MONTHS ANALYSIS TAB ---
   function renderAnalysis() {
-    const allCombined = getCombinedExpenses();
+    const allDirect = getDirectExpenses();
     const byMonth = {};
     const byCat = {};
     let grandTotal = 0;
 
-    allCombined.forEach(item => {
+    allDirect.forEach(item => {
       if (!item.date) return;
       const m = item.date.slice(0, 7);
-      if (!byMonth[m]) byMonth[m] = { total: 0, direct: 0, borrowed: 0 };
-      byMonth[m].total += item.amount;
-      if (item.source === 'borrowed') byMonth[m].borrowed += item.amount;
-      else byMonth[m].direct += item.amount;
-
-      const catKey = item.source === 'borrowed' ? 'Borrowed Spending' : item.category;
-      byCat[catKey] = (byCat[catKey] || 0) + item.amount;
+      byMonth[m] = (byMonth[m] || 0) + item.amount;
+      byCat[item.category] = (byCat[item.category] || 0) + item.amount;
       grandTotal += item.amount;
     });
 
@@ -1230,18 +1181,15 @@
     if (months.length === 0) {
       histEl.innerHTML = `<p style="font-size:0.84rem; color:var(--muted);">No monthly expenses recorded yet.</p>`;
     } else {
-      const maxMonth = Math.max(...months.map(m => byMonth[m].total), 1);
+      const maxMonth = Math.max(...months.map(m => byMonth[m]), 1);
       histEl.innerHTML = months.map(m => {
-        const d = byMonth[m];
-        const pct = Math.round((d.total / maxMonth) * 100);
+        const total = byMonth[m];
+        const pct = Math.round((total / maxMonth) * 100);
         return `
           <div class="month-block">
             <div class="month-block-head">
               <span>${formatMonthLabel(m)}</span>
-              <span class="text-accent">${formatRs(d.total)}</span>
-            </div>
-            <div class="month-block-cats">
-              Direct: ${formatRs(d.direct)} • Borrowed: ${formatRs(d.borrowed)}
+              <span class="text-accent">${formatRs(total)}</span>
             </div>
             <div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div>
           </div>
@@ -1271,7 +1219,7 @@
     const bytes = new Blob([JSON.stringify(state)]).size;
     const kb = (bytes / 1024).toFixed(2);
     document.getElementById('storageStats').textContent =
-      `Records: ${state.expenses.length} direct expenses, ${state.debts.length} friend records, ${state.wishlist.length} buy-list items • Local size: ${kb} KB`;
+      `Records: ${state.expenses.length} expenses, ${state.debts.length} friend records, ${state.wishlist.length} buy-list items • Local size: ${kb} KB`;
   }
 
   function exportJSON() {
