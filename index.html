@@ -13,21 +13,27 @@
 <link rel="apple-touch-icon" href="./app-icon.png">
 <style>
   :root {
-    --bg: #0d1117;
-    --surface: #161b22;
-    --surface-hover: #1f2630;
-    --border: #30363d;
-    --text: #e6edf3;
-    --muted: #8b949e;
+    --bg: #0b0e14;
+    --surface: #141922;
+    --surface-2: #1b2230;
+    --border: #263042;
+    --text: #eef2f6;
+    --muted: #8b97ab;
     --accent: #58a6ff;
     --accent-dim: rgba(88, 166, 255, 0.14);
     --green: #3fb950;
     --green-dim: rgba(63, 185, 80, 0.14);
+    --teal-card: #122a27;
+    --teal-border: #1e4b44;
+    --blue-card: #16243d;
+    --blue-border: #253d66;
     --red: #f85149;
     --red-dim: rgba(248, 81, 73, 0.14);
-    --amber: #d29922;
-    --amber-dim: rgba(210, 153, 34, 0.14);
-    --radius: 14px;
+    --amber: #e3a835;
+    --amber-dim: rgba(227, 168, 53, 0.14);
+    --purple: #b392f0;
+    --purple-dim: rgba(179, 146, 240, 0.14);
+    --radius: 16px;
   }
 
   * {
@@ -42,42 +48,61 @@
     background-color: var(--bg);
     color: var(--text);
     line-height: 1.45;
-    padding-bottom: 86px;
+    padding-bottom: 88px;
     min-height: 100vh;
     user-select: none;
   }
 
-  input, select {
+  input, select, textarea {
     user-select: text;
   }
 
   header {
     position: sticky;
     top: 0;
-    z-index: 20;
-    background: rgba(13, 17, 23, 0.94);
-    backdrop-filter: blur(10px);
+    z-index: 25;
+    background: rgba(11, 14, 20, 0.92);
+    backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
-    padding: calc(14px + env(safe-area-inset-top)) 16px 14px;
+    padding: calc(12px + env(safe-area-inset-top)) 16px 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 10px;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .back-btn {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 5px 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
   }
 
   header h1 {
-    font-size: 1.15rem;
+    font-size: 1.12rem;
     font-weight: 700;
     letter-spacing: -0.01em;
   }
 
-  .header-pill {
-    font-size: 0.72rem;
-    font-weight: 600;
-    padding: 4px 10px;
-    border-radius: 999px;
+  .header-action {
     background: var(--surface);
     border: 1px solid var(--border);
-    color: var(--accent);
+    color: var(--muted);
+    border-radius: 10px;
+    padding: 6px 10px;
+    font-size: 0.78rem;
+    font-weight: 600;
     cursor: pointer;
   }
 
@@ -87,12 +112,11 @@
     padding: 14px 14px 24px;
   }
 
-  .tab-panel {
+  .view-panel {
     display: none;
-    animation: fadeIn 0.18s ease;
+    animation: fadeIn 0.16s ease;
   }
-
-  .tab-panel.active {
+  .view-panel.active {
     display: block;
   }
 
@@ -101,11 +125,64 @@
     to { opacity: 1; transform: translateY(0); }
   }
 
-  .summary-grid {
+  .section-kicker {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 16px 0 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .section-kicker:first-child {
+    margin-top: 2px;
+  }
+
+  /* Dashboard Hero Cards */
+  .hero-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
+  }
+
+  .hero-card {
+    border-radius: var(--radius);
+    padding: 15px 14px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .hero-card:active { transform: scale(0.98); }
+  .hero-card.teal { background: var(--teal-card); border-color: var(--teal-border); }
+  .hero-card.blue { background: var(--blue-card); border-color: var(--blue-border); }
+
+  .hero-icon {
+    font-size: 1.15rem;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .hero-label {
+    font-size: 0.76rem;
+    color: #c2d0de;
+    margin-bottom: 2px;
+  }
+
+  .hero-value {
+    font-size: 1.35rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Compact Dashboard Insights */
+  .dash-mini-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
   }
 
   .card {
@@ -113,10 +190,15 @@
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 14px;
+    margin-bottom: 12px;
   }
 
-  .card.full {
-    grid-column: span 2;
+  .card-compact {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px;
+    cursor: pointer;
   }
 
   .card-label {
@@ -131,31 +213,79 @@
   }
 
   .card-value {
-    font-size: 1.48rem;
+    font-size: 1.38rem;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
   }
-
-  .card-value.sm {
-    font-size: 1.15rem;
-  }
-
-  .card-sub {
-    font-size: 0.75rem;
-    color: var(--muted);
-    margin-top: 4px;
-  }
+  .card-value.sm { font-size: 1.08rem; }
+  .card-sub { font-size: 0.75rem; color: var(--muted); margin-top: 3px; }
 
   .text-green { color: var(--green); }
   .text-red { color: var(--red); }
   .text-amber { color: var(--amber); }
   .text-accent { color: var(--accent); }
+  .text-purple { color: var(--purple); }
 
+  /* 2x2 Main Section Tiles (matching proposed layout) */
+  .tile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .nav-tile {
+    border-radius: 14px;
+    padding: 14px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: transform 0.1s;
+  }
+  .nav-tile:active { transform: scale(0.98); }
+
+  .nav-tile.t-mint { background: rgba(63, 185, 80, 0.13); border-color: rgba(63, 185, 80, 0.28); color: #d6f5dc; }
+  .nav-tile.t-sky { background: rgba(88, 166, 255, 0.13); border-color: rgba(88, 166, 255, 0.28); color: #dcecff; }
+  .nav-tile.t-peach { background: rgba(227, 168, 53, 0.14); border-color: rgba(227, 168, 53, 0.28); color: #faebd0; }
+  .nav-tile.t-lavender { background: rgba(179, 146, 240, 0.14); border-color: rgba(179, 146, 240, 0.28); color: #eee4ff; }
+
+  .nav-tile-title { font-size: 0.92rem; font-weight: 700; }
+  .nav-tile-sub { font-size: 0.72rem; opacity: 0.8; }
+
+  /* MORE Grid */
+  .more-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .more-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    padding: 12px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    color: var(--text);
+    font-size: 0.76rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .more-item:active { background: var(--surface-2); }
+  .more-icon { font-size: 1.25rem; }
+
+  /* Status Banner */
   .status-banner {
     border-radius: 12px;
-    padding: 11px 13px;
-    margin-bottom: 14px;
-    font-size: 0.84rem;
+    padding: 10px 13px;
+    margin-bottom: 12px;
+    font-size: 0.82rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -172,19 +302,19 @@
     color: var(--red);
   }
 
+  /* Forms & Validation */
   .form-card {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 14px;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
   }
 
   .form-title {
     font-size: 0.9rem;
-    font-weight: 600;
+    font-weight: 700;
     margin-bottom: 12px;
-    color: var(--text);
   }
 
   .form-row {
@@ -194,17 +324,12 @@
     margin-bottom: 10px;
   }
 
-  .form-group {
-    margin-bottom: 10px;
-  }
-
-  .form-row .form-group {
-    margin-bottom: 0;
-  }
+  .form-group { margin-bottom: 10px; }
+  .form-row .form-group { margin-bottom: 0; }
 
   label {
     display: block;
-    font-size: 0.75rem;
+    font-size: 0.74rem;
     color: var(--muted);
     margin-bottom: 4px;
   }
@@ -216,14 +341,19 @@
     border-radius: 10px;
     padding: 10px 12px;
     color: var(--text);
-    font-size: 0.95rem;
+    font-size: 0.94rem;
     outline: none;
     transition: border-color 0.15s;
   }
+  input:focus, select:focus { border-color: var(--accent); }
 
-  input:focus, select:focus {
-    border-color: var(--accent);
+  .error-msg {
+    color: var(--red);
+    font-size: 0.78rem;
+    margin: 4px 0 8px;
+    display: none;
   }
+  .error-msg.show { display: block; }
 
   .segmented {
     display: grid;
@@ -234,88 +364,38 @@
     padding: 3px;
     margin-bottom: 12px;
   }
-
   .segmented button {
     background: transparent;
     border: none;
     color: var(--muted);
     padding: 8px;
-    font-size: 0.84rem;
+    font-size: 0.83rem;
     font-weight: 600;
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.15s;
   }
-
-  .segmented button.active-exp {
-    background: var(--accent-dim);
-    color: var(--accent);
-  }
-
-  .segmented button.active-inc {
-    background: var(--green-dim);
-    color: var(--green);
-  }
-
-  .segmented button.active-owe {
-    background: var(--red-dim);
-    color: var(--red);
-  }
-
-  .segmented button.active-lent {
-    background: var(--green-dim);
-    color: var(--green);
-  }
+  .segmented button.active-exp { background: var(--accent-dim); color: var(--accent); }
+  .segmented button.active-inc { background: var(--green-dim); color: var(--green); }
+  .segmented button.active-owe { background: var(--red-dim); color: var(--red); }
+  .segmented button.active-lent { background: var(--green-dim); color: var(--green); }
 
   .btn {
     width: 100%;
     padding: 11px 16px;
     border-radius: 10px;
     border: none;
-    font-size: 0.95rem;
+    font-size: 0.93rem;
     font-weight: 600;
     cursor: pointer;
-    transition: opacity 0.15s, transform 0.1s;
+    transition: transform 0.1s;
   }
+  .btn:active { transform: scale(0.99); }
+  .btn-primary { background: var(--accent); color: #0b0e14; }
+  .btn-green { background: var(--green); color: #0b0e14; }
+  .btn-secondary { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+  .btn-danger { background: var(--red-dim); color: var(--red); border: 1px solid rgba(248, 81, 73, 0.3); }
 
-  .btn:active {
-    transform: scale(0.99);
-  }
-
-  .btn-primary {
-    background: var(--accent);
-    color: #0d1117;
-  }
-
-  .btn-green {
-    background: var(--green);
-    color: #0d1117;
-  }
-
-  .btn-secondary {
-    background: var(--surface-hover);
-    color: var(--text);
-    border: 1px solid var(--border);
-  }
-
-  .btn-danger {
-    background: var(--red-dim);
-    color: var(--red);
-    border: 1px solid rgba(248, 81, 73, 0.3);
-  }
-
-  .section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 14px 0 8px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-
+  /* Lists */
   .item-list {
     display: flex;
     flex-direction: column;
@@ -325,35 +405,21 @@
   .list-item {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: 13px;
     padding: 12px;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     gap: 10px;
   }
+  .list-item.settled, .list-item.bought { opacity: 0.56; }
 
-  .list-item.settled, .list-item.bought {
-    opacity: 0.58;
-  }
-
-  .item-main {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .item-title {
-    font-size: 0.95rem;
-    font-weight: 600;
-    word-break: break-word;
-  }
-
-  .item-title.strike {
-    text-decoration: line-through;
-  }
+  .item-main { flex: 1; min-width: 0; }
+  .item-title { font-size: 0.94rem; font-weight: 600; word-break: break-word; }
+  .item-title.strike { text-decoration: line-through; }
 
   .item-sub {
-    font-size: 0.78rem;
+    font-size: 0.77rem;
     color: var(--muted);
     margin-top: 3px;
     display: flex;
@@ -363,14 +429,13 @@
   }
 
   .pill {
-    font-size: 0.68rem;
+    font-size: 0.67rem;
     font-weight: 600;
     padding: 1px 7px;
     border-radius: 6px;
     background: var(--accent-dim);
     color: var(--accent);
   }
-
   .pill.high { background: var(--red-dim); color: var(--red); }
   .pill.medium { background: var(--amber-dim); color: var(--amber); }
   .pill.low, .pill.income { background: var(--green-dim); color: var(--green); }
@@ -383,19 +448,8 @@
     gap: 6px;
     flex-shrink: 0;
   }
-
-  .item-amount {
-    font-weight: 700;
-    font-size: 0.98rem;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .item-actions {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 5px;
-  }
+  .item-amount { font-weight: 700; font-size: 0.96rem; font-variant-numeric: tabular-nums; }
+  .item-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 5px; }
 
   .chip-btn {
     background: var(--bg);
@@ -407,36 +461,21 @@
     border-radius: 7px;
     cursor: pointer;
   }
-
-  .chip-btn.part {
-    border-color: rgba(88, 166, 255, 0.45);
-    color: var(--accent);
-  }
-
-  .chip-btn.done {
-    border-color: rgba(63, 185, 80, 0.45);
-    color: var(--green);
-  }
-
-  .chip-btn.del:hover {
-    border-color: var(--red);
-    color: var(--red);
-  }
+  .chip-btn.part { border-color: rgba(88, 166, 255, 0.45); color: var(--accent); }
+  .chip-btn.done { border-color: rgba(63, 185, 80, 0.45); color: var(--green); }
+  .chip-btn.del:hover { border-color: var(--red); color: var(--red); }
 
   .bar-bg {
-    height: 6px;
+    height: 7px;
     background: var(--bg);
     border-radius: 999px;
     overflow: hidden;
     margin-top: 6px;
   }
-  .bar-fill {
-    height: 100%;
-    background: var(--accent);
-    border-radius: 999px;
-  }
+  .bar-fill { height: 100%; background: var(--accent); border-radius: 999px; }
   .bar-fill.green { background: var(--green); }
   .bar-fill.red { background: var(--red); }
+  .bar-fill.amber { background: var(--amber); }
 
   .payment-history {
     margin-top: 6px;
@@ -446,45 +485,52 @@
     color: var(--muted);
   }
 
-  .month-block {
-    padding: 12px 0;
-    border-bottom: 1px solid var(--border);
+  /* Daily Target Calendar Grid */
+  .day-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin-top: 10px;
   }
-  .month-block:last-child {
-    border-bottom: none;
-  }
-  .month-block-head {
+  .day-cell {
+    aspect-ratio: 1;
+    border-radius: 9px;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
-    font-size: 0.95rem;
+    justify-content: center;
+    font-size: 0.75rem;
     font-weight: 700;
-    margin-bottom: 4px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--muted);
   }
+  .day-cell.ok { background: var(--green-dim); border-color: rgba(63,185,80,0.4); color: var(--green); }
+  .day-cell.over { background: var(--red-dim); border-color: rgba(248,81,73,0.45); color: var(--red); }
+  .day-cell.today { box-shadow: 0 0 0 2px var(--accent); }
 
   .empty-state {
     text-align: center;
-    padding: 28px 16px;
+    padding: 26px 14px;
     color: var(--muted);
-    font-size: 0.88rem;
+    font-size: 0.86rem;
     background: var(--surface);
     border: 1px dashed var(--border);
     border-radius: var(--radius);
   }
 
+  /* Modals */
   .modal-backdrop {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.74);
+    background: rgba(0, 0, 0, 0.76);
     z-index: 60;
     align-items: center;
     justify-content: center;
     padding: 16px;
   }
-  .modal-backdrop.open {
-    display: flex;
-  }
+  .modal-backdrop.open { display: flex; }
   .modal-box {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -494,17 +540,18 @@
     max-width: 390px;
   }
 
+  /* Bottom Navigation */
   nav.bottom-nav {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    background: rgba(22, 27, 34, 0.96);
+    background: rgba(20, 25, 34, 0.97);
     backdrop-filter: blur(12px);
     border-top: 1px solid var(--border);
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
+    grid-template-columns: repeat(5, 1fr);
+    padding: 7px 2px calc(7px + env(safe-area-inset-bottom));
     z-index: 30;
   }
 
@@ -516,7 +563,7 @@
     flex-direction: column;
     align-items: center;
     gap: 3px;
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     font-weight: 600;
     padding: 3px 0;
     cursor: pointer;
@@ -528,90 +575,192 @@
     object-fit: contain;
     border-radius: 4px;
   }
+  .nav-icon-emoji { font-size: 1.2rem; line-height: 1.1; }
+  .nav-btn.active { color: var(--accent); }
 
-  .nav-icon-emoji {
-    font-size: 1.25rem;
-    line-height: 1.1;
-  }
-
-  .nav-btn.active {
-    color: var(--accent);
-  }
-
+  /* Toast with Undo */
   .toast {
     position: fixed;
-    bottom: 82px;
+    bottom: 84px;
     left: 50%;
     transform: translateX(-50%) translateY(20px);
-    background: #238636;
+    background: #1f2937;
+    border: 1px solid var(--border);
     color: #fff;
-    padding: 8px 16px;
+    padding: 10px 16px;
     border-radius: 999px;
-    font-size: 0.82rem;
+    font-size: 0.83rem;
     font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 12px;
     opacity: 0;
     pointer-events: none;
     transition: all 0.2s ease;
-    z-index: 70;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    z-index: 80;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.55);
   }
-
   .toast.show {
     opacity: 1;
+    pointer-events: auto;
     transform: translateX(-50%) translateY(0);
+  }
+  .toast-undo {
+    background: var(--accent);
+    color: #0b0e14;
+    border: none;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    cursor: pointer;
   }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>PocketLedger</h1>
-  <button class="header-pill" onclick="openBalanceModal()">Set Starting Cash</button>
+  <div class="header-left">
+    <button class="back-btn" id="headerBackBtn" onclick="openView('dashboard')">← Home</button>
+    <h1 id="headerTitle">PocketLedger</h1>
+  </div>
+  <button class="header-action" onclick="openView('settings')">⚙ Settings</button>
 </header>
 
 <div class="container">
 
-  <!-- TAB 1: CASHFLOW (EXPENSES + RECEIVED MONEY) -->
-  <section id="tab-expenses" class="tab-panel active">
-    <div class="summary-grid">
-      <div class="card">
-        <div class="card-label">Available Cash Now</div>
+  <!-- VIEW 0: HOME DASHBOARD -->
+  <section id="view-dashboard" class="view-panel active">
+    <div class="section-kicker">HOME DASHBOARD</div>
+
+    <div class="hero-grid">
+      <div class="hero-card teal" onclick="openView('expenses')">
+        <span class="hero-icon">💼</span>
+        <div class="hero-label">Available balance</div>
+        <div class="hero-value text-green" id="dashBalance">Rs. 0</div>
+      </div>
+      <div class="hero-card blue" onclick="openView('expenses')">
+        <span class="hero-icon">📉</span>
+        <div class="hero-label">Monthly expenses</div>
+        <div class="hero-value text-accent" id="dashMonthExp">Rs. 0</div>
+      </div>
+    </div>
+
+    <div id="dashMatchBanner" class="status-banner surplus">
+      <span id="dashMatchText">Balanced cashflow</span>
+      <strong id="dashMatchDiff">Rs. 0</strong>
+    </div>
+
+    <div class="dash-mini-grid">
+      <div class="card-compact" onclick="openView('friends')">
+        <div class="card-label">Borrowed / Lent</div>
+        <div style="font-size:0.8rem; margin-top:4px;">
+          <div>Owe: <strong class="text-red" id="dashOwe">Rs. 0</strong></div>
+          <div>Owed: <strong class="text-green" id="dashLent">Rs. 0</strong></div>
+        </div>
+      </div>
+      <div class="card-compact" onclick="openView('savings')">
+        <div class="card-label">Savings progress</div>
+        <div class="card-value sm text-purple" id="dashSavingsVal">Rs. 0</div>
+        <div class="bar-bg"><div class="bar-fill green" id="dashSavingsBar" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="card-compact" style="margin-bottom:14px;" onclick="openView('upcoming')">
+      <div class="card-label">
+        <span>Upcoming payments</span>
+        <span id="dashUpcomingCount">0 due</span>
+      </div>
+      <div id="dashUpcomingPreview" style="font-size:0.83rem; color:var(--muted); margin-top:2px;">
+        No upcoming payments scheduled.
+      </div>
+    </div>
+
+    <div class="section-kicker">MAIN SECTIONS</div>
+    <div class="tile-grid">
+      <button class="nav-tile t-mint" onclick="openView('expenses')">
+        <span style="font-size:1.2rem;">🧾</span>
+        <span class="nav-tile-title">Expenses & Cash</span>
+        <span class="nav-tile-sub">Log spend & income</span>
+      </button>
+      <button class="nav-tile t-sky" onclick="openView('friends')">
+        <span style="font-size:1.2rem;">👥</span>
+        <span class="nav-tile-title">Borrowed Money</span>
+        <span class="nav-tile-sub">Partial & person view</span>
+      </button>
+      <button class="nav-tile t-peach" onclick="openView('wishlist')">
+        <span style="font-size:1.2rem;">🛒</span>
+        <span class="nav-tile-title">Future Buy List</span>
+        <span class="nav-tile-sub" id="dashWishSub">0 pending items</span>
+      </button>
+      <button class="nav-tile t-lavender" onclick="openView('reports')">
+        <span style="font-size:1.2rem;">📊</span>
+        <span class="nav-tile-title">Monthly Reports</span>
+        <span class="nav-tile-sub">Breakdowns & history</span>
+      </button>
+    </div>
+
+    <div class="section-kicker">MORE</div>
+    <div class="more-grid">
+      <button class="more-item" onclick="openView('streak')">
+        <span class="more-icon">🎯</span>
+        <span>Daily Target</span>
+      </button>
+      <button class="more-item" onclick="openView('savings')">
+        <span class="more-icon">💰</span>
+        <span>Savings</span>
+      </button>
+      <button class="more-item" onclick="openView('upcoming')">
+        <span class="more-icon">📅</span>
+        <span>Upcoming</span>
+      </button>
+      <button class="more-item" onclick="openView('reports')">
+        <span class="more-icon">🔎</span>
+        <span>History</span>
+      </button>
+      <button class="more-item" onclick="openView('settings')">
+        <span class="more-icon">⚙️</span>
+        <span>Settings</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- VIEW 1: EXPENSES & RECEIVED MONEY -->
+  <section id="view-expenses" class="view-panel">
+    <div class="dash-mini-grid">
+      <div class="card-compact">
+        <div class="card-label">Available Cash</div>
         <div class="card-value sm text-green" id="availableCash">Rs. 0</div>
         <div class="card-sub" id="startingCashSub">Start: Rs. 0</div>
       </div>
-      <div class="card">
+      <div class="card-compact">
         <div class="card-label">This Month Spend</div>
         <div class="card-value sm text-accent" id="currentMonthTotal">Rs. 0</div>
         <div class="card-sub" id="currentMonthIncomeSub">Received: Rs. 0</div>
       </div>
     </div>
 
-    <div id="matchBanner" class="status-banner surplus">
-      <span id="matchBannerText">Income & spend are balanced.</span>
-      <strong id="matchBannerDiff">Rs. 0</strong>
-    </div>
-
     <div class="form-card">
-      <div class="segmented" style="margin-bottom:12px;">
+      <div class="segmented">
         <button type="button" id="btnEntryExpense" class="active-exp" onclick="setEntryMode('expense')">- Add Expense</button>
         <button type="button" id="btnEntryIncome" onclick="setEntryMode('income')">+ Received Money</button>
       </div>
 
-      <!-- EXPENSE FORM -->
-      <form id="expenseForm">
+      <form id="expenseForm" novalidate>
         <div class="form-row">
           <div class="form-group">
             <label>Amount (Rs.)</label>
-            <input type="number" id="expAmount" inputmode="decimal" step="any" min="0.01" placeholder="e.g. 450" required>
+            <input type="number" id="expAmount" inputmode="decimal" step="any" min="0.01" placeholder="e.g. 450">
           </div>
           <div class="form-group">
             <label>Category</label>
             <select id="expCategory">
-              <option value="Food & Tea">Food & Tea</option>
-              <option value="Travel / Bus">Travel / Bus</option>
+              <option value="Food">Food</option>
+              <option value="Transport">Transport</option>
+              <option value="Education">Education</option>
+              <option value="Entertainment">Entertainment</option>
               <option value="Boarding / Bills">Boarding / Bills</option>
               <option value="Data & Reload">Data & Reload</option>
-              <option value="Uni / Study">Uni / Study</option>
               <option value="Shopping">Shopping</option>
               <option value="Other">Other</option>
             </select>
@@ -620,22 +769,22 @@
         <div class="form-row">
           <div class="form-group">
             <label>Date</label>
-            <input type="date" id="expDate" required>
+            <input type="date" id="expDate">
           </div>
           <div class="form-group">
             <label>Note (Optional)</label>
             <input type="text" id="expNote" placeholder="e.g. Lunch packet">
           </div>
         </div>
+        <div class="error-msg" id="expError"></div>
         <button type="submit" class="btn btn-primary" style="margin-top:6px;">Save Expense</button>
       </form>
 
-      <!-- RECEIVED MONEY FORM -->
-      <form id="incomeForm" style="display:none;">
+      <form id="incomeForm" style="display:none;" novalidate>
         <div class="form-row">
           <div class="form-group">
             <label>Amount Received (Rs.)</label>
-            <input type="number" id="incAmount" inputmode="decimal" step="any" min="0.01" placeholder="e.g. 10000" required>
+            <input type="number" id="incAmount" inputmode="decimal" step="any" min="0.01" placeholder="e.g. 10000">
           </div>
           <div class="form-group">
             <label>Source</label>
@@ -650,32 +799,33 @@
         <div class="form-row">
           <div class="form-group">
             <label>Date</label>
-            <input type="date" id="incDate" required>
+            <input type="date" id="incDate">
           </div>
           <div class="form-group">
             <label>Note (Optional)</label>
             <input type="text" id="incNote" placeholder="e.g. Nov allowance">
           </div>
         </div>
+        <div class="error-msg" id="incError"></div>
         <button type="submit" class="btn btn-green" style="margin-top:6px;">Save Received Money</button>
       </form>
     </div>
 
-    <div class="section-header">
+    <div class="section-kicker">
       <span>This Month Activity (<span id="currentMonthLabel"></span>)</span>
       <span id="expCount">0 items</span>
     </div>
     <div class="item-list" id="expenseList"></div>
   </section>
 
-  <!-- TAB 2: FRIENDS IOU LEDGER (PERSON-WISE GROUPING + PARTIAL SETTLEMENTS) -->
-  <section id="tab-friends" class="tab-panel">
-    <div class="summary-grid">
-      <div class="card">
+  <!-- VIEW 2: FRIENDS IOU LEDGER -->
+  <section id="view-friends" class="view-panel">
+    <div class="dash-mini-grid">
+      <div class="card-compact">
         <div class="card-label">Remaining I Owe</div>
         <div class="card-value sm text-red" id="totalOwe">Rs. 0</div>
       </div>
-      <div class="card">
+      <div class="card-compact">
         <div class="card-label">Remaining Owed to Me</div>
         <div class="card-value sm text-green" id="totalLent">Rs. 0</div>
       </div>
@@ -687,34 +837,35 @@
         <button type="button" id="btnTypeOwe" class="active-owe" onclick="setDebtType('borrowed')">I Borrowed (Owe)</button>
         <button type="button" id="btnTypeLent" onclick="setDebtType('lent')">Friend Borrowed</button>
       </div>
-      <form id="debtForm">
+      <form id="debtForm" novalidate>
         <input type="hidden" id="debtType" value="borrowed">
         <div class="form-row">
           <div class="form-group">
             <label>Friend Name / Initials</label>
-            <input type="text" id="debtPerson" list="friendSuggestions" placeholder="e.g. Ch / Kasun" required>
+            <input type="text" id="debtPerson" list="friendSuggestions" placeholder="e.g. Ch / Kasun">
             <datalist id="friendSuggestions"></datalist>
           </div>
           <div class="form-group">
             <label>Total Amount (Rs.)</label>
-            <input type="number" id="debtAmount" inputmode="decimal" step="any" min="0.01" placeholder="e.g. 1500" required>
+            <input type="number" id="debtAmount" inputmode="decimal" step="any" min="0.01" placeholder="e.g. 1500">
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
             <label>Date</label>
-            <input type="date" id="debtDate" required>
+            <input type="date" id="debtDate">
           </div>
           <div class="form-group">
             <label>Reason / Note</label>
             <input type="text" id="debtNote" placeholder="e.g. Dinner / Bus">
           </div>
         </div>
+        <div class="error-msg" id="debtError"></div>
         <button type="submit" class="btn btn-primary" style="margin-top:6px;">Save Record</button>
       </form>
     </div>
 
-    <div class="section-header">
+    <div class="section-kicker">
       <span>Friends Ledger</span>
       <div style="display:flex; gap:6px;">
         <button class="chip-btn" id="btnViewRecords" onclick="setFriendView('records')" style="color:var(--accent); border-color:var(--accent);">Records</button>
@@ -724,26 +875,24 @@
     <div class="item-list" id="debtList"></div>
   </section>
 
-  <!-- TAB 3: FUTURE BUY CHECKLIST -->
-  <section id="tab-wishlist" class="tab-panel">
-    <div class="summary-grid">
-      <div class="card full">
-        <div class="card-label">Estimated Total Needed (Pending Items)</div>
-        <div class="card-value text-amber" id="wishlistTotal">Rs. 0</div>
-      </div>
+  <!-- VIEW 3: FUTURE BUY CHECKLIST -->
+  <section id="view-wishlist" class="view-panel">
+    <div class="card">
+      <div class="card-label">Estimated Total Needed (Pending Items)</div>
+      <div class="card-value text-amber" id="wishlistTotal">Rs. 0</div>
     </div>
 
     <div class="form-card">
       <div class="form-title">+ Add Future Buy Item</div>
-      <form id="wishForm">
+      <form id="wishForm" novalidate>
         <div class="form-group">
           <label>Item Name</label>
-          <input type="text" id="wishName" placeholder="e.g. Laptop stand / Earbuds case" required>
+          <input type="text" id="wishName" placeholder="e.g. Laptop stand / Earbuds case">
         </div>
         <div class="form-row">
           <div class="form-group">
             <label>Est. Cost (Rs.)</label>
-            <input type="number" id="wishCost" inputmode="decimal" step="any" min="0" placeholder="e.g. 3500" required>
+            <input type="number" id="wishCost" inputmode="decimal" step="any" min="0" placeholder="e.g. 3500">
           </div>
           <div class="form-group">
             <label>Priority</label>
@@ -754,75 +903,187 @@
             </select>
           </div>
         </div>
-        <button type="submit" class="btn btn-primary" style="margin-top:6px;">Add to Checklist</button>
+        <div class="error-msg" id="wishError"></div>
+        <button type="submit" class="btn btn-primary" style="margin-top:6px;">Add to Buy List</button>
       </form>
     </div>
 
-    <div class="section-header">
-      <span>Checklist</span>
+    <div class="section-kicker">
+      <span>Buy List</span>
       <span id="wishCount">0 items</span>
     </div>
     <div class="item-list" id="wishList"></div>
   </section>
 
-  <!-- TAB 4: ALL-MONTHS ANALYSIS & BACKUP -->
-  <section id="tab-analysis" class="tab-panel">
-    <div class="card" style="margin-bottom:12px;">
-      <div class="card-label">All Months: Received vs. Spent</div>
-      <div id="monthlyHistoryList" style="margin-top:6px;"></div>
-    </div>
-
-    <div class="card" style="margin-bottom:12px;">
-      <div class="card-label">All-Time Expense Categories</div>
-      <div id="allTimeCategories" style="margin-top:8px;"></div>
-    </div>
-
-    <div class="card" style="margin-bottom:12px;">
-      <div class="card-label">Income Sources Summary</div>
-      <div id="incomeSummaryList" style="margin-top:8px;"></div>
-    </div>
-
-    <div class="card" style="margin-bottom:12px;">
-      <div class="card-label">Backup & Gemini API Data Export</div>
-      <p style="font-size:0.82rem; color:var(--muted); margin:6px 0 12px;">
-        Export your structured JSON anytime for safe backup or to feed directly into the Gemini API for AI cost-reduction advice.
-      </p>
-      <button class="btn btn-primary" onclick="exportJSON()" style="margin-bottom:8px;">Export Backup (.json)</button>
-      <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">Restore Backup (.json)</button>
-      <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importJSON(event)">
+  <!-- VIEW 4: MONTHLY REPORTS & FULL SEARCHABLE HISTORY -->
+  <section id="view-reports" class="view-panel">
+    <div class="card">
+      <div class="card-label">
+        <span>Monthly Category Breakdown</span>
+        <select id="reportMonthSelect" style="width:auto; padding:4px 8px; font-size:0.8rem;" onchange="renderReports()"></select>
+      </div>
+      <div id="monthlyCategorySummary" style="margin-top:10px;"></div>
     </div>
 
     <div class="card">
-      <div class="card-label">Storage Info</div>
-      <p style="font-size:0.82rem; color:var(--muted); margin:6px 0 12px;" id="storageStats">Calculating...</p>
+      <div class="card-label">All Months Overview</div>
+      <div id="allMonthsList" style="margin-top:8px;"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Search Full History (Expenses, Income & Friends)</div>
+      <input type="text" id="historySearchInput" placeholder="Search friend name, note, category, or date..." oninput="renderHistorySearch()" style="margin-top:6px; margin-bottom:10px;">
+      <div class="item-list" id="historySearchResults"></div>
+    </div>
+  </section>
+
+  <!-- VIEW 5: DAILY SPENDING TARGET STREAK (DEDICATED NEW SECTION) -->
+  <section id="view-streak" class="view-panel">
+    <div class="card" id="streakNoTargetBox" style="display:none;">
+      <div class="form-title">No Daily Spending Target Set Yet</div>
+      <p style="font-size:0.84rem; color:var(--muted); margin-bottom:12px;">
+        Set your daily spending limit inside Settings (so it stays out of the way of daily use). Once set, this page tracks how many days you stayed under budget.
+      </p>
+      <button class="btn btn-primary" onclick="openView('settings')">Go to Settings</button>
+    </div>
+
+    <div id="streakActiveBox">
+      <div class="dash-mini-grid">
+        <div class="card-compact">
+          <div class="card-label">Days Within Target</div>
+          <div class="card-value text-green" id="streakDaysCount">0 / 0</div>
+          <div class="card-sub" id="streakLimitLabel">Target: Rs. 0/day</div>
+        </div>
+        <div class="card-compact">
+          <div class="card-label">Current Streak</div>
+          <div class="card-value text-amber" id="streakCurrentRun">0 days</div>
+          <div class="card-sub" id="streakTodaySpend">Today: Rs. 0</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">
+          <span>This Month Daily Tracker</span>
+          <span style="font-size:0.7rem; color:var(--muted);">Green = Under • Red = Over</span>
+        </div>
+        <div class="day-grid" id="streakCalendarGrid"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEW 6: SAVINGS -->
+  <section id="view-savings" class="view-panel">
+    <div class="card">
+      <div class="card-label">Savings Goal Progress</div>
+      <div class="card-value text-purple" id="savingsTotalDisplay">Rs. 0</div>
+      <div class="card-sub" id="savingsGoalSub">Goal: Not set (configure in Settings)</div>
+      <div class="bar-bg" style="height:10px; margin-top:8px;">
+        <div class="bar-fill green" id="savingsProgressBar" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-title">+ Add / Update Savings Entry</div>
+      <form id="savingsForm" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Amount Saved (Rs.)</label>
+            <input type="number" id="savAmount" inputmode="decimal" step="any" min="0.01" placeholder="e.g. 2000">
+          </div>
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="savDate">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Note (Optional)</label>
+          <input type="text" id="savNote" placeholder="e.g. Leftover from Nov allowance">
+        </div>
+        <div class="error-msg" id="savError"></div>
+        <button type="submit" class="btn btn-green">Add to Savings</button>
+      </form>
+    </div>
+
+    <div class="section-kicker"><span>Savings History</span><span id="savCount">0 entries</span></div>
+    <div class="item-list" id="savingsList"></div>
+  </section>
+
+  <!-- VIEW 7: UPCOMING PAYMENTS -->
+  <section id="view-upcoming" class="view-panel">
+    <div class="form-card">
+      <div class="form-title">+ Schedule Upcoming Payment</div>
+      <form id="upcomingForm" novalidate>
+        <div class="form-group">
+          <label>Payment Title</label>
+          <input type="text" id="upTitle" placeholder="e.g. Boarding Rent / Hutch Reload / Pay Kasun">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Amount (Rs.)</label>
+            <input type="number" id="upAmount" inputmode="decimal" step="any" min="0.01" placeholder="e.g. 6000">
+          </div>
+          <div class="form-group">
+            <label>Due Date</label>
+            <input type="date" id="upDate">
+          </div>
+        </div>
+        <div class="error-msg" id="upError"></div>
+        <button type="submit" class="btn btn-primary">Save Upcoming Payment</button>
+      </form>
+    </div>
+
+    <div class="section-kicker"><span>Scheduled Payments</span><span id="upCount">0 pending</span></div>
+    <div class="item-list" id="upcomingList"></div>
+  </section>
+
+  <!-- VIEW 8: SETTINGS (ALL RARELY EDITED CONFIGS + BACKUP) -->
+  <section id="view-settings" class="view-panel">
+    <div class="form-card">
+      <div class="form-title">Financial Targets & Starting Cash</div>
+      <form id="settingsForm" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Starting Cash (Rs.)</label>
+            <input type="number" id="setStartBalance" inputmode="decimal" step="any" min="0" placeholder="e.g. 5000">
+          </div>
+          <div class="form-group">
+            <label>Start Date</label>
+            <input type="date" id="setStartDate">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Daily Spending Target (Rs.)</label>
+            <input type="number" id="setDailyTarget" inputmode="decimal" step="any" min="0" placeholder="e.g. 800">
+          </div>
+          <div class="form-group">
+            <label>Savings Goal (Rs.)</label>
+            <input type="number" id="setSavingsGoal" inputmode="decimal" step="any" min="0" placeholder="e.g. 15000">
+          </div>
+        </div>
+        <div class="error-msg" id="settingsError"></div>
+        <button type="submit" class="btn btn-primary" style="margin-top:6px;">Save Settings</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Backup & Cloud Safety</div>
+      <p style="font-size:0.81rem; color:var(--muted); margin:6px 0 12px;">
+        Save a backup file to your phone's Downloads folder or share it straight to your <strong>Google Drive</strong> app so you never lose data if your phone is lost or reset.
+      </p>
+      <button class="btn btn-primary" onclick="exportJSON()" style="margin-bottom:8px;">Backup to Phone Storage (.json)</button>
+      <button class="btn btn-green" onclick="shareBackupToDrive()" style="margin-bottom:8px;">Share / Save Backup to Google Drive</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">Restore Backup File (.json)</button>
+      <input type="file" id="importFile" accept=".json,application/json" style="display:none;" onchange="importJSON(event)">
+    </div>
+
+    <div class="card">
+      <div class="card-label">Storage & Protection Info</div>
+      <p style="font-size:0.81rem; color:var(--muted); margin:6px 0 12px;" id="storageStats">Calculating...</p>
       <button class="btn btn-danger" onclick="clearAllData()">Reset All Data</button>
     </div>
   </section>
 
-</div>
-
-<!-- STARTING BALANCE MODAL -->
-<div class="modal-backdrop" id="balanceModal">
-  <div class="modal-box">
-    <div class="form-title">Set Current Cash on Hand</div>
-    <p style="font-size:0.82rem; color:var(--muted); margin-bottom:12px;">
-      Enter how much money you currently have in your wallet/bank starting today. Future received money adds to this, and expenses subtract from it.
-    </p>
-    <form id="balanceForm">
-      <div class="form-group">
-        <label>Starting Cash (Rs.)</label>
-        <input type="number" id="startingBalanceInput" inputmode="decimal" step="any" min="0" placeholder="e.g. 5000" required>
-      </div>
-      <div class="form-group">
-        <label>Start Date</label>
-        <input type="date" id="startingDateInput" required>
-      </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px;">
-        <button type="button" class="btn btn-secondary" onclick="closeBalanceModal()">Cancel</button>
-        <button type="submit" class="btn btn-primary">Save Cash</button>
-      </div>
-    </form>
-  </div>
 </div>
 
 <!-- PARTIAL PAYMENT MODAL -->
@@ -830,17 +1091,18 @@
   <div class="modal-box">
     <div class="form-title" id="partialModalTitle">Record Partial Payment</div>
     <p style="font-size:0.82rem; color:var(--muted); margin-bottom:12px;" id="partialModalSub"></p>
-    <form id="partialForm">
+    <form id="partialForm" novalidate>
       <input type="hidden" id="partialDebtId">
       <div class="form-group">
         <label>Payment Amount (Rs.)</label>
-        <input type="number" id="partialAmount" inputmode="decimal" step="any" min="0.01" required>
+        <input type="number" id="partialAmount" inputmode="decimal" step="any" min="0.01">
       </div>
       <div class="form-group">
         <label>Payment Date</label>
-        <input type="date" id="partialDate" required>
+        <input type="date" id="partialDate">
       </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px;">
+      <div class="error-msg" id="partialError"></div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px;">
         <button type="button" class="btn btn-secondary" onclick="closePartialModal()">Cancel</button>
         <button type="submit" class="btn btn-primary">Save Payment</button>
       </div>
@@ -848,85 +1110,82 @@
   </div>
 </div>
 
-<div class="toast" id="toast">Saved!</div>
+<!-- FUTURE BUY ONE-TAP PURCHASE MODAL -->
+<div class="modal-backdrop" id="purchaseModal">
+  <div class="modal-box">
+    <div class="form-title" id="purchaseModalTitle">Mark Item as Purchased</div>
+    <p style="font-size:0.83rem; color:var(--muted); margin-bottom:14px;" id="purchaseModalSub"></p>
+    <input type="hidden" id="purchaseWishId">
+    <button type="button" class="btn btn-green" style="margin-bottom:8px;" onclick="confirmPurchase(true)">Purchased &amp; Add Expense</button>
+    <button type="button" class="btn btn-secondary" style="margin-bottom:8px;" onclick="confirmPurchase(false)">Mark Purchased Only</button>
+    <button type="button" class="btn" style="background:transparent; color:var(--muted);" onclick="closePurchaseModal()">Cancel</button>
+  </div>
+</div>
 
+<!-- TOAST WITH UNDO -->
+<div class="toast" id="toast">
+  <span id="toastText">Saved</span>
+  <button class="toast-undo" id="toastUndoBtn" style="display:none;" onclick="undoLastDelete()">UNDO</button>
+</div>
+
+<!-- BOTTOM NAV (Uses your uploaded nav-*.png files with clean fallback) -->
 <nav class="bottom-nav">
-  <button class="nav-btn active" onclick="switchTab('expenses', this)">
-    <img src="nav-expenses.png" class="nav-icon-img" onerror="this.outerHTML='<span class='nav-icon-emoji'>💸</span>'">
-    <span>Cashflow</span>
+  <button class="nav-btn active" id="nav-dashboard" onclick="openView('dashboard')">
+    <span class="nav-icon-emoji">🏠</span>
+    <span>Home</span>
   </button>
-  <button class="nav-btn" onclick="switchTab('friends', this)">
-    <img src="nav-friends.png" class="nav-icon-img" onerror="this.outerHTML='<span class='nav-icon-emoji'>🤝</span>'">
+  <button class="nav-btn" id="nav-expenses" onclick="openView('expenses')">
+    <img src="./nav-expenses.png" alt="Cash" class="nav-icon-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+    <span class="nav-icon-emoji" style="display:none;">💸</span>
+    <span>Expenses</span>
+  </button>
+  <button class="nav-btn" id="nav-friends" onclick="openView('friends')">
+    <img src="./nav-friends.png" alt="Friends" class="nav-icon-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+    <span class="nav-icon-emoji" style="display:none;">🤝</span>
     <span>Friends</span>
   </button>
-  <button class="nav-btn" onclick="switchTab('wishlist', this)">
-    <img src="nav-wishlist.png" class="nav-icon-img" onerror="this.outerHTML='<span class='nav-icon-emoji'>🛒</span>'">
+  <button class="nav-btn" id="nav-wishlist" onclick="openView('wishlist')">
+    <img src="./nav-wishlist.png" alt="Buy List" class="nav-icon-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+    <span class="nav-icon-emoji" style="display:none;">🛒</span>
     <span>Buy List</span>
   </button>
-  <button class="nav-btn" onclick="switchTab('analysis', this)">
-    <img src="nav-analysis.png" class="nav-icon-img" onerror="this.outerHTML='<span class='nav-icon-emoji'>📊</span>'">
-    <span>Analysis</span>
+  <button class="nav-btn" id="nav-reports" onclick="openView('reports')">
+    <img src="./nav-analysis.png" alt="Reports" class="nav-icon-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+    <span class="nav-icon-emoji" style="display:none;">📊</span>
+    <span>Reports</span>
   </button>
 </nav>
 
 <script>
   const STORAGE_KEY = 'pocket_ledger_v1';
-  let friendViewMode = 'records'; // 'records' or 'grouped'
+  let friendViewMode = 'records';
+  let lastDeleted = null;
+  let toastTimer = null;
+  let storagePersisted = 'Checking...';
 
   let state = {
     startingBalance: 0,
     startingDate: '',
+    settings: { dailyTarget: 0, savingsGoal: 0 },
     expenses: [],
     incomes: [],
     debts: [],
-    wishlist: []
+    wishlist: [],
+    savings: [],
+    upcoming: []
   };
 
-  function loadState() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        state.startingBalance = Number(parsed.startingBalance) || 0;
-        state.startingDate = parsed.startingDate || getTodayStr();
-        state.expenses = Array.isArray(parsed.expenses) ? parsed.expenses : [];
-        state.incomes = Array.isArray(parsed.incomes) ? parsed.incomes : [];
-        state.debts = Array.isArray(parsed.debts) ? parsed.debts : [];
-        state.wishlist = Array.isArray(parsed.wishlist) ? parsed.wishlist : [];
-        state.debts.forEach(d => {
-          if (typeof d.paidAmount !== 'number') {
-            d.paidAmount = d.settled ? d.amount : 0;
-          }
-          if (!Array.isArray(d.payments)) {
-            d.payments = [];
-          }
-        });
-      } else {
-        state.startingDate = getTodayStr();
-      }
-    } catch (e) {
-      console.error('Failed to load localStorage', e);
-    }
-  }
-
-  function saveState() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    renderAll();
-  }
-
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2000);
-  }
-
-  function formatRs(num) {
-    return 'Rs. ' + Number(num || 0).toLocaleString('en-US', {
-      minimumFractionDigits: num % 1 === 0 ? 0 : 2,
-      maximumFractionDigits: 2
-    });
-  }
+  const VIEW_TITLES = {
+    dashboard: 'PocketLedger',
+    expenses: 'Expenses & Cashflow',
+    friends: 'Borrowed & Lent',
+    wishlist: 'Future Buy List',
+    reports: 'Monthly Reports & History',
+    streak: 'Daily Spending Target',
+    savings: 'Savings Progress',
+    upcoming: 'Upcoming Payments',
+    settings: 'App Settings'
+  };
 
   function getTodayStr() {
     const d = new Date();
@@ -945,54 +1204,218 @@
     return date.toLocaleString('en-US', { month: 'short', year: 'numeric' });
   }
 
-  function switchTab(tabName, btnEl) {
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('tab-' + tabName).classList.add('active');
-    btnEl.classList.add('active');
+  function formatRs(num) {
+    const val = Number(num || 0);
+    return 'Rs. ' + val.toLocaleString('en-US', {
+      minimumFractionDigits: val % 1 === 0 ? 0 : 2,
+      maximumFractionDigits: 2
+    });
   }
 
-  // --- STARTING BALANCE MODAL ---
-  function openBalanceModal() {
-    document.getElementById('startingBalanceInput').value = state.startingBalance || '';
-    document.getElementById('startingDateInput').value = state.startingDate || getTodayStr();
-    document.getElementById('balanceModal').classList.add('open');
+  function escapeHtml(str) {
+    return String(str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
 
-  function closeBalanceModal() {
-    document.getElementById('balanceModal').classList.remove('open');
+  function isValidDateStr(str) {
+    return /^\d{4}-\d{2}-\d{2}$/.test(str) && !isNaN(new Date(str + 'T00:00:00').getTime());
   }
 
-  document.getElementById('balanceForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    state.startingBalance = parseFloat(document.getElementById('startingBalanceInput').value) || 0;
-    state.startingDate = document.getElementById('startingDateInput').value || getTodayStr();
-    closeBalanceModal();
-    saveState();
-    showToast('Starting cash updated');
-  });
-
-  // --- ENTRY MODE TOGGLE (EXPENSE VS RECEIVED MONEY) ---
-  function setEntryMode(mode) {
-    const expForm = document.getElementById('expenseForm');
-    const incForm = document.getElementById('incomeForm');
-    const btnExp = document.getElementById('btnEntryExpense');
-    const btnInc = document.getElementById('btnEntryIncome');
-
-    if (mode === 'expense') {
-      expForm.style.display = 'block';
-      incForm.style.display = 'none';
-      btnExp.className = 'active-exp';
-      btnInc.className = '';
+  function showFieldError(id, msg) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (msg) {
+      el.textContent = msg;
+      el.classList.add('show');
     } else {
-      expForm.style.display = 'none';
-      incForm.style.display = 'block';
-      btnExp.className = '';
-      btnInc.className = 'active-inc';
+      el.textContent = '';
+      el.classList.remove('show');
     }
   }
 
+  function showToast(msg, allowUndo = false) {
+    const t = document.getElementById('toast');
+    const txt = document.getElementById('toastText');
+    const undoBtn = document.getElementById('toastUndoBtn');
+    txt.textContent = msg;
+    undoBtn.style.display = allowUndo ? 'inline-block' : 'none';
+    t.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      t.classList.remove('show');
+      if (allowUndo) lastDeleted = null;
+    }, allowUndo ? 6000 : 2200);
+  }
+
+  function undoLastDelete() {
+    if (!lastDeleted) return;
+    const { listKey, item, index } = lastDeleted;
+    if (Array.isArray(state[listKey])) {
+      const insertAt = Math.min(index, state[listKey].length);
+      state[listKey].splice(insertAt, 0, item);
+      lastDeleted = null;
+      saveState();
+      showToast('Restored!', false);
+    }
+  }
+
+  function deleteWithUndo(listKey, id, label) {
+    const idx = state[listKey].findIndex(x => x.id === id);
+    if (idx === -1) return;
+    const [removed] = state[listKey].splice(idx, 1);
+    lastDeleted = { listKey, item: removed, index: idx };
+    saveState();
+    showToast(`${label} deleted`, true);
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const p = JSON.parse(raw);
+        state.startingBalance = Number(p.startingBalance) || 0;
+        state.startingDate = isValidDateStr(p.startingDate) ? p.startingDate : getTodayStr();
+        state.settings = {
+          dailyTarget: Number(p.settings?.dailyTarget) || 0,
+          savingsGoal: Number(p.settings?.savingsGoal) || 0
+        };
+        state.expenses = Array.isArray(p.expenses) ? p.expenses : [];
+        state.incomes = Array.isArray(p.incomes) ? p.incomes : [];
+        state.debts = Array.isArray(p.debts) ? p.debts : [];
+        state.wishlist = Array.isArray(p.wishlist) ? p.wishlist : [];
+        state.savings = Array.isArray(p.savings) ? p.savings : [];
+        state.upcoming = Array.isArray(p.upcoming) ? p.upcoming : [];
+
+        // Normalize legacy categories & debts
+        state.debts.forEach(d => {
+          if (typeof d.paidAmount !== 'number') d.paidAmount = d.settled ? Number(d.amount) : 0;
+          if (!Array.isArray(d.payments)) d.payments = [];
+        });
+      } else {
+        state.startingDate = getTodayStr();
+      }
+    } catch (e) {
+      console.error('Load error', e);
+      state.startingDate = getTodayStr();
+    }
+  }
+
+  function saveState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    renderAll();
+  }
+
+  function openView(viewName) {
+    document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+    const target = document.getElementById('view-' + viewName);
+    if (target) target.classList.add('active');
+
+    document.getElementById('headerTitle').textContent = VIEW_TITLES[viewName] || 'PocketLedger';
+    document.getElementById('headerBackBtn').style.display = viewName === 'dashboard' ? 'none' : 'inline-block';
+
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    const navMatch = document.getElementById('nav-' + viewName);
+    if (navMatch) navMatch.classList.add('active');
+
+    if (viewName === 'settings') populateSettingsForm();
+    if (viewName === 'reports') renderReports();
+    if (viewName === 'streak') renderStreak();
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  // --- COMPUTED METRICS ---
+  function getAvailableCash() {
+    const totalInc = state.incomes.reduce((s, i) => s + Number(i.amount), 0);
+    const totalExp = state.expenses.reduce((s, e) => s + Number(e.amount), 0);
+    return state.startingBalance + totalInc - totalExp;
+  }
+
+  function getMonthTotals(ym) {
+    const spent = state.expenses
+      .filter(e => e.date && e.date.startsWith(ym))
+      .reduce((s, e) => s + Number(e.amount), 0);
+    const received = state.incomes
+      .filter(i => i.date && i.date.startsWith(ym))
+      .reduce((s, i) => s + Number(i.amount), 0);
+    return { spent, received };
+  }
+
+  // --- RENDER DASHBOARD ---
+  function renderDashboard() {
+    const curMonth = getCurrentMonthStr();
+    const avail = getAvailableCash();
+    const { spent, received } = getMonthTotals(curMonth);
+
+    const balEl = document.getElementById('dashBalance');
+    balEl.textContent = formatRs(avail);
+    balEl.className = 'hero-value ' + (avail >= 0 ? 'text-green' : 'text-red');
+    document.getElementById('dashMonthExp').textContent = formatRs(spent);
+
+    // Match / Shortage banner
+    const banner = document.getElementById('dashMatchBanner');
+    const bTxt = document.getElementById('dashMatchText');
+    const bDiff = document.getElementById('dashMatchDiff');
+    if (avail < 0) {
+      banner.className = 'status-banner shortage';
+      bTxt.textContent = 'Shortage! Expenses exceed available cash:';
+      bDiff.textContent = formatRs(Math.abs(avail));
+    } else if (spent > received && received > 0) {
+      banner.className = 'status-banner shortage';
+      bTxt.textContent = 'This month spend exceeds received by:';
+      bDiff.textContent = formatRs(spent - received);
+    } else {
+      banner.className = 'status-banner surplus';
+      bTxt.textContent = 'Cashflow matched • Buffer:';
+      bDiff.textContent = formatRs(avail);
+    }
+
+    // Friends summary
+    const oweRem = state.debts
+      .filter(d => d.type === 'borrowed' && !d.settled)
+      .reduce((s, d) => s + Math.max(0, Number(d.amount) - Number(d.paidAmount || 0)), 0);
+    const lentRem = state.debts
+      .filter(d => d.type === 'lent' && !d.settled)
+      .reduce((s, d) => s + Math.max(0, Number(d.amount) - Number(d.paidAmount || 0)), 0);
+    document.getElementById('dashOwe').textContent = formatRs(oweRem);
+    document.getElementById('dashLent').textContent = formatRs(lentRem);
+
+    // Savings summary
+    const savedTotal = state.savings.reduce((s, x) => s + Number(x.amount), 0);
+    const goal = state.settings.savingsGoal || 0;
+    document.getElementById('dashSavingsVal').textContent =
+      goal > 0 ? `${formatRs(savedTotal)} / ${formatRs(goal)}` : formatRs(savedTotal);
+    const savPct = goal > 0 ? Math.min(100, Math.round((savedTotal / goal) * 100)) : (savedTotal > 0 ? 100 : 0);
+    document.getElementById('dashSavingsBar').style.width = savPct + '%';
+
+    // Upcoming payments preview
+    const pendingUp = state.upcoming.filter(u => !u.paid).sort((a, b) => a.date.localeCompare(b.date));
+    document.getElementById('dashUpcomingCount').textContent = `${pendingUp.length} due`;
+    const upPrev = document.getElementById('dashUpcomingPreview');
+    if (pendingUp.length === 0) {
+      upPrev.textContent = 'No upcoming payments scheduled.';
+    } else {
+      const next = pendingUp[0];
+      upPrev.innerHTML = `Next: <strong style="color:var(--text);">${escapeHtml(next.title)}</strong> (${formatRs(next.amount)}) due ${next.date}`;
+    }
+
+    // Wishlist pending count
+    const pendingWish = state.wishlist.filter(w => !w.bought).length;
+    document.getElementById('dashWishSub').textContent = `${pendingWish} pending item${pendingWish === 1 ? '' : 's'}`;
+  }
+
   // --- EXPENSES & INCOME ---
+  function setEntryMode(mode) {
+    document.getElementById('expenseForm').style.display = mode === 'expense' ? 'block' : 'none';
+    document.getElementById('incomeForm').style.display = mode === 'income' ? 'block' : 'none';
+    document.getElementById('btnEntryExpense').className = mode === 'expense' ? 'active-exp' : '';
+    document.getElementById('btnEntryIncome').className = mode === 'income' ? 'active-inc' : '';
+    showFieldError('expError', '');
+    showFieldError('incError', '');
+  }
+
   document.getElementById('expenseForm').addEventListener('submit', function(e) {
     e.preventDefault();
     const amount = parseFloat(document.getElementById('expAmount').value);
@@ -1000,20 +1423,19 @@
     const date = document.getElementById('expDate').value;
     const note = document.getElementById('expNote').value.trim();
 
-    if (!amount || amount <= 0) return;
+    if (!Number.isFinite(amount) || amount <= 0 || amount > 100000000) {
+      return showFieldError('expError', 'Enter a valid amount greater than Rs. 0.');
+    }
+    if (!isValidDateStr(date)) {
+      return showFieldError('expError', 'Please select a valid date.');
+    }
+    showFieldError('expError', '');
 
-    state.expenses.unshift({
-      id: Date.now().toString(),
-      amount,
-      category,
-      date,
-      note
-    });
-
+    state.expenses.unshift({ id: Date.now().toString(), amount, category, date, note });
     document.getElementById('expAmount').value = '';
     document.getElementById('expNote').value = '';
     saveState();
-    showToast('Expense added');
+    showToast('Expense saved');
   });
 
   document.getElementById('incomeForm').addEventListener('submit', function(e) {
@@ -1023,92 +1445,46 @@
     const date = document.getElementById('incDate').value;
     const note = document.getElementById('incNote').value.trim();
 
-    if (!amount || amount <= 0) return;
+    if (!Number.isFinite(amount) || amount <= 0 || amount > 100000000) {
+      return showFieldError('incError', 'Enter a valid amount greater than Rs. 0.');
+    }
+    if (!isValidDateStr(date)) {
+      return showFieldError('incError', 'Please select a valid date.');
+    }
+    showFieldError('incError', '');
 
-    state.incomes.unshift({
-      id: Date.now().toString(),
-      amount,
-      source,
-      date,
-      note
-    });
-
+    state.incomes.unshift({ id: Date.now().toString(), amount, source, date, note });
     document.getElementById('incAmount').value = '';
     document.getElementById('incNote').value = '';
     saveState();
-    showToast('Received money added');
+    showToast('Received money saved');
   });
-
-  function deleteExpense(id) {
-    state.expenses = state.expenses.filter(x => x.id !== id);
-    saveState();
-    showToast('Deleted');
-  }
-
-  function deleteIncome(id) {
-    state.incomes = state.incomes.filter(x => x.id !== id);
-    saveState();
-    showToast('Deleted');
-  }
 
   function renderCashflow() {
     const curMonth = getCurrentMonthStr();
     document.getElementById('currentMonthLabel').textContent = formatMonthLabel(curMonth);
 
-    // Overall Available Cash from starting balance + all received - all spent
-    const totalReceivedAll = state.incomes.reduce((s, i) => s + Number(i.amount), 0);
-    const totalSpentAll = state.expenses.reduce((s, e) => s + Number(e.amount), 0);
-    const availableNow = state.startingBalance + totalReceivedAll - totalSpentAll;
-
+    const avail = getAvailableCash();
     const availEl = document.getElementById('availableCash');
-    availEl.textContent = formatRs(availableNow);
-    availEl.className = 'card-value sm ' + (availableNow >= 0 ? 'text-green' : 'text-red');
-    document.getElementById('startingCashSub').textContent =
-      `Start (${state.startingDate || 'Today'}): ${formatRs(state.startingBalance)}`;
+    availEl.textContent = formatRs(avail);
+    availEl.className = 'card-value sm ' + (avail >= 0 ? 'text-green' : 'text-red');
+    document.getElementById('startingCashSub').textContent = `Start: ${formatRs(state.startingBalance)}`;
 
-    // Current month spend vs received
-    const monthExpenses = state.expenses.filter(e => e.date && e.date.startsWith(curMonth));
-    const monthIncomes = state.incomes.filter(i => i.date && i.date.startsWith(curMonth));
+    const { spent, received } = getMonthTotals(curMonth);
+    document.getElementById('currentMonthTotal').textContent = formatRs(spent);
+    document.getElementById('currentMonthIncomeSub').textContent = `Received: ${formatRs(received)}`;
 
-    const monthSpendSum = monthExpenses.reduce((s, e) => s + Number(e.amount), 0);
-    const monthIncomeSum = monthIncomes.reduce((s, i) => s + Number(i.amount), 0);
-
-    document.getElementById('currentMonthTotal').textContent = formatRs(monthSpendSum);
-    document.getElementById('currentMonthIncomeSub').textContent = `Received: ${formatRs(monthIncomeSum)}`;
-
-    // Income vs Cost Match / Shortage Banner
-    const banner = document.getElementById('matchBanner');
-    const bannerText = document.getElementById('matchBannerText');
-    const bannerDiff = document.getElementById('matchBannerDiff');
-
-    const totalAvailableForMonth = state.startingBalance + monthIncomeSum;
-    const netDiff = availableNow;
-
-    if (netDiff < 0) {
-      banner.className = 'status-banner shortage';
-      bannerText.textContent = 'Shortage! Expenses exceed available funds by:';
-      bannerDiff.textContent = formatRs(Math.abs(netDiff));
-    } else if (monthSpendSum > monthIncomeSum && monthIncomeSum > 0) {
-      banner.className = 'status-banner shortage';
-      bannerText.textContent = 'Monthly spend exceeds this month received by:';
-      bannerDiff.textContent = formatRs(monthSpendSum - monthIncomeSum);
-    } else {
-      banner.className = 'status-banner surplus';
-      bannerText.textContent = 'Matched! Remaining balance buffer:';
-      bannerDiff.textContent = formatRs(netDiff);
-    }
-
-    // Combined chronological feed for this month
+    const monthExp = state.expenses.filter(e => e.date && e.date.startsWith(curMonth));
+    const monthInc = state.incomes.filter(i => i.date && i.date.startsWith(curMonth));
     const combined = [
-      ...monthExpenses.map(e => ({ ...e, kind: 'expense' })),
-      ...monthIncomes.map(i => ({ ...i, kind: 'income' }))
+      ...monthExp.map(e => ({ ...e, kind: 'expense' })),
+      ...monthInc.map(i => ({ ...i, kind: 'income' }))
     ].sort((a, b) => b.date.localeCompare(a.date));
 
     document.getElementById('expCount').textContent = `${combined.length} item${combined.length === 1 ? '' : 's'}`;
-
     const listEl = document.getElementById('expenseList');
     if (combined.length === 0) {
-      listEl.innerHTML = `<div class="empty-state">No expenses or received money logged for ${formatMonthLabel(curMonth)} yet.</div>`;
+      listEl.innerHTML = `<div class="empty-state">No expenses or received money for ${formatMonthLabel(curMonth)}.</div>`;
       return;
     }
 
@@ -1116,8 +1492,7 @@
       const isInc = item.kind === 'income';
       const title = item.note || (isInc ? item.source : item.category);
       const badge = isInc ? item.source : item.category;
-      const delFn = isInc ? `deleteIncome('${item.id}')` : `deleteExpense('${item.id}')`;
-
+      const listKey = isInc ? 'incomes' : 'expenses';
       return `
         <div class="list-item">
           <div class="item-main">
@@ -1129,37 +1504,28 @@
           </div>
           <div class="item-right">
             <div class="item-amount ${isInc ? 'text-green' : ''}">${isInc ? '+ ' : ''}${formatRs(item.amount)}</div>
-            <button class="chip-btn del" onclick="${delFn}">Delete</button>
+            <button class="chip-btn del" onclick="deleteWithUndo('${listKey}', '${item.id}', '${isInc ? 'Income' : 'Expense'}')">Delete</button>
           </div>
         </div>
       `;
     }).join('');
   }
 
-  // --- FRIENDS DEBTS (WITH PERSON-WISE GROUPING & PARTIAL PAYMENTS) ---
+  // --- FRIENDS LEDGER ---
   function setDebtType(type) {
     document.getElementById('debtType').value = type;
-    const btnOwe = document.getElementById('btnTypeOwe');
-    const btnLent = document.getElementById('btnTypeLent');
-    btnOwe.className = type === 'borrowed' ? 'active-owe' : '';
-    btnLent.className = type === 'lent' ? 'active-lent' : '';
+    document.getElementById('btnTypeOwe').className = type === 'borrowed' ? 'active-owe' : '';
+    document.getElementById('btnTypeLent').className = type === 'lent' ? 'active-lent' : '';
   }
 
   function setFriendView(mode) {
     friendViewMode = mode;
     const btnRec = document.getElementById('btnViewRecords');
     const btnGrp = document.getElementById('btnViewGrouped');
-    if (mode === 'records') {
-      btnRec.style.color = 'var(--accent)';
-      btnRec.style.borderColor = 'var(--accent)';
-      btnGrp.style.color = 'var(--muted)';
-      btnGrp.style.borderColor = 'var(--border)';
-    } else {
-      btnGrp.style.color = 'var(--accent)';
-      btnGrp.style.borderColor = 'var(--accent)';
-      btnRec.style.color = 'var(--muted)';
-      btnRec.style.borderColor = 'var(--border)';
-    }
+    btnRec.style.color = mode === 'records' ? 'var(--accent)' : 'var(--muted)';
+    btnRec.style.borderColor = mode === 'records' ? 'var(--accent)' : 'var(--border)';
+    btnGrp.style.color = mode === 'grouped' ? 'var(--accent)' : 'var(--muted)';
+    btnGrp.style.borderColor = mode === 'grouped' ? 'var(--accent)' : 'var(--border)';
     renderDebts();
   }
 
@@ -1171,42 +1537,34 @@
     const date = document.getElementById('debtDate').value;
     const note = document.getElementById('debtNote').value.trim();
 
-    if (!person || !amount || amount <= 0) return;
+    if (!person) return showFieldError('debtError', 'Enter friend name or initials.');
+    if (!Number.isFinite(amount) || amount <= 0) return showFieldError('debtError', 'Enter a valid amount greater than Rs. 0.');
+    if (!isValidDateStr(date)) return showFieldError('debtError', 'Please select a valid date.');
+    showFieldError('debtError', '');
 
     state.debts.unshift({
       id: Date.now().toString(),
-      type,
-      person,
-      amount,
-      paidAmount: 0,
-      payments: [],
-      date,
-      note,
-      settled: false
+      type, person, amount, paidAmount: 0, payments: [], date, note, settled: false
     });
-
     document.getElementById('debtPerson').value = '';
     document.getElementById('debtAmount').value = '';
     document.getElementById('debtNote').value = '';
     saveState();
-    showToast('Record saved');
+    showToast('Friend record saved');
   });
 
   function openPartialModal(id) {
     const item = state.debts.find(d => d.id === id);
     if (!item) return;
-    const remaining = Math.max(0, item.amount - (item.paidAmount || 0));
+    const rem = Math.max(0, Number(item.amount) - Number(item.paidAmount || 0));
     document.getElementById('partialDebtId').value = id;
     document.getElementById('partialModalTitle').textContent =
       item.type === 'borrowed' ? `Pay Part to ${item.person}` : `Receive Part from ${item.person}`;
-    document.getElementById('partialModalSub').textContent =
-      `Total: ${formatRs(item.amount)} • Remaining: ${formatRs(remaining)}`;
-    const amtInput = document.getElementById('partialAmount');
-    amtInput.max = remaining;
-    amtInput.value = '';
+    document.getElementById('partialModalSub').textContent = `Total: ${formatRs(item.amount)} • Remaining: ${formatRs(rem)}`;
+    document.getElementById('partialAmount').value = '';
     document.getElementById('partialDate').value = getTodayStr();
+    showFieldError('partialError', '');
     document.getElementById('partialModal').classList.add('open');
-    setTimeout(() => amtInput.focus(), 50);
   }
 
   function closePartialModal() {
@@ -1218,25 +1576,30 @@
     const id = document.getElementById('partialDebtId').value;
     const payAmt = parseFloat(document.getElementById('partialAmount').value);
     const payDate = document.getElementById('partialDate').value;
-
     const item = state.debts.find(d => d.id === id);
-    if (!item || !payAmt || payAmt <= 0) return;
+    if (!item) return;
 
-    const remaining = Math.max(0, item.amount - (item.paidAmount || 0));
-    const applied = Math.min(payAmt, remaining);
-
-    item.paidAmount = Number(((item.paidAmount || 0) + applied).toFixed(2));
-    item.payments = item.payments || [];
-    item.payments.push({ amount: applied, date: payDate });
-
-    if (item.paidAmount >= item.amount - 0.001) {
-      item.paidAmount = item.amount;
-      item.settled = true;
+    const rem = Math.max(0, Number(item.amount) - Number(item.paidAmount || 0));
+    if (!Number.isFinite(payAmt) || payAmt <= 0) {
+      return showFieldError('partialError', 'Enter a valid payment greater than Rs. 0.');
+    }
+    if (payAmt > rem + 0.001) {
+      return showFieldError('partialError', `Amount exceeds remaining balance (${formatRs(rem)}).`);
+    }
+    if (!isValidDateStr(payDate)) {
+      return showFieldError('partialError', 'Select a valid date.');
     }
 
+    item.paidAmount = Number((Number(item.paidAmount || 0) + payAmt).toFixed(2));
+    item.payments = item.payments || [];
+    item.payments.push({ amount: payAmt, date: payDate });
+    if (item.paidAmount >= Number(item.amount) - 0.001) {
+      item.paidAmount = Number(item.amount);
+      item.settled = true;
+    }
     closePartialModal();
     saveState();
-    showToast(item.settled ? 'Fully settled!' : `Recorded ${formatRs(applied)}`);
+    showToast(item.settled ? 'Fully settled!' : `Recorded ${formatRs(payAmt)}`);
   });
 
   function fullSettleOrUndo(id) {
@@ -1249,37 +1612,29 @@
       saveState();
       showToast('Reopened balance');
     } else {
-      const remaining = Math.max(0, item.amount - (item.paidAmount || 0));
-      if (remaining > 0) {
+      const rem = Math.max(0, Number(item.amount) - Number(item.paidAmount || 0));
+      if (rem > 0) {
         item.payments = item.payments || [];
-        item.payments.push({ amount: remaining, date: getTodayStr() });
+        item.payments.push({ amount: rem, date: getTodayStr() });
       }
-      item.paidAmount = item.amount;
+      item.paidAmount = Number(item.amount);
       item.settled = true;
       saveState();
-      showToast('Marked as fully settled');
+      showToast('Fully settled');
     }
   }
 
-  function deleteDebt(id) {
-    state.debts = state.debts.filter(d => d.id !== id);
-    saveState();
-    showToast('Deleted');
-  }
-
   function renderDebts() {
-    // Update friend autocomplete suggestions
     const uniqueNames = Array.from(new Set(state.debts.map(d => d.person.trim()))).filter(Boolean);
     document.getElementById('friendSuggestions').innerHTML =
       uniqueNames.map(n => `<option value="${escapeHtml(n)}">`).join('');
 
     const oweRem = state.debts
       .filter(d => d.type === 'borrowed' && !d.settled)
-      .reduce((s, d) => s + Math.max(0, d.amount - (d.paidAmount || 0)), 0);
-
+      .reduce((s, d) => s + Math.max(0, Number(d.amount) - Number(d.paidAmount || 0)), 0);
     const lentRem = state.debts
       .filter(d => d.type === 'lent' && !d.settled)
-      .reduce((s, d) => s + Math.max(0, d.amount - (d.paidAmount || 0)), 0);
+      .reduce((s, d) => s + Math.max(0, Number(d.amount) - Number(d.paidAmount || 0)), 0);
 
     document.getElementById('totalOwe').textContent = formatRs(oweRem);
     document.getElementById('totalLent').textContent = formatRs(lentRem);
@@ -1291,53 +1646,31 @@
     }
 
     if (friendViewMode === 'grouped') {
-      const peopleMap = {};
+      const map = {};
       state.debts.forEach(d => {
         const key = d.person.trim().toLowerCase();
-        if (!peopleMap[key]) {
-          peopleMap[key] = { name: d.person.trim(), iOwe: 0, theyOwe: 0, count: 0 };
-        }
-        const rem = d.settled ? 0 : Math.max(0, d.amount - (d.paidAmount || 0));
-        if (d.type === 'borrowed') peopleMap[key].iOwe += rem;
-        else peopleMap[key].theyOwe += rem;
-        peopleMap[key].count += 1;
+        if (!map[key]) map[key] = { name: d.person.trim(), iOwe: 0, theyOwe: 0, count: 0 };
+        const rem = d.settled ? 0 : Math.max(0, Number(d.amount) - Number(d.paidAmount || 0));
+        if (d.type === 'borrowed') map[key].iOwe += rem;
+        else map[key].theyOwe += rem;
+        map[key].count += 1;
       });
-
-      const groups = Object.values(peopleMap).sort((a, b) => {
-        const netA = Math.abs(a.theyOwe - a.iOwe);
-        const netB = Math.abs(b.theyOwe - b.iOwe);
-        return netB - netA;
-      });
-
+      const groups = Object.values(map).sort((a, b) => Math.abs(b.theyOwe - b.iOwe) - Math.abs(a.theyOwe - a.iOwe));
       listEl.innerHTML = groups.map(g => {
-        const net = g.theyOwe - g.iOwe; // positive = they owe you, negative = you owe them
-        const isSettled = Math.abs(net) < 0.01 && g.iOwe === 0 && g.theyOwe === 0;
-        let statusText = 'All settled';
-        let amtClass = 'text-green';
-        if (net > 0) {
-          statusText = `${escapeHtml(g.name)} owes you (Net)`;
-          amtClass = 'text-green';
-        } else if (net < 0) {
-          statusText = `You owe ${escapeHtml(g.name)} (Net)`;
-          amtClass = 'text-red';
-        }
-
+        const net = g.theyOwe - g.iOwe;
+        const settledAll = Math.abs(net) < 0.01 && g.iOwe === 0 && g.theyOwe === 0;
+        const statusTxt = net > 0 ? `${escapeHtml(g.name)} owes you (Net)` : (net < 0 ? `You owe ${escapeHtml(g.name)} (Net)` : 'All settled');
         return `
-          <div class="list-item ${isSettled ? 'settled' : ''}">
+          <div class="list-item ${settledAll ? 'settled' : ''}">
             <div class="item-main">
               <div class="item-title">${escapeHtml(g.name)}</div>
-              <div class="item-sub">
-                <span>${statusText}</span>
-                <span>• ${g.count} record${g.count === 1 ? '' : 's'}</span>
-              </div>
+              <div class="item-sub"><span>${statusTxt}</span><span>• ${g.count} records</span></div>
               <div class="item-sub" style="margin-top:4px;">
-                <span style="color:var(--red);">I Owe: ${formatRs(g.iOwe)}</span>
-                <span>•</span>
-                <span style="color:var(--green);">Owes Me: ${formatRs(g.theyOwe)}</span>
+                <span class="text-red">I Owe: ${formatRs(g.iOwe)}</span> • <span class="text-green">Owes Me: ${formatRs(g.theyOwe)}</span>
               </div>
             </div>
             <div class="item-right">
-              <div class="item-amount ${amtClass}">${formatRs(Math.abs(net))}</div>
+              <div class="item-amount ${net >= 0 ? 'text-green' : 'text-red'}">${formatRs(Math.abs(net))}</div>
               <button class="chip-btn" onclick="setFriendView('records')">Details</button>
             </div>
           </div>
@@ -1347,18 +1680,15 @@
     }
 
     const sorted = [...state.debts].sort((a, b) => Number(a.settled) - Number(b.settled));
-
     listEl.innerHTML = sorted.map(d => {
       const isOwe = d.type === 'borrowed';
-      const paid = d.paidAmount || 0;
-      const rem = Math.max(0, d.amount - paid);
+      const paid = Number(d.paidAmount || 0);
+      const rem = Math.max(0, Number(d.amount) - paid);
       const pct = d.amount > 0 ? Math.min(100, Math.round((paid / d.amount) * 100)) : 0;
       const label = isOwe ? `You owe ${escapeHtml(d.person)}` : `${escapeHtml(d.person)} owes you`;
-
-      const historyHtml = (d.payments && d.payments.length > 0)
-        ? `<div class="payment-history">Installments: ${d.payments.map(p => `${formatRs(p.amount)} (${p.date})`).join(', ')}</div>`
+      const hist = (d.payments && d.payments.length > 0)
+        ? `<div class="payment-history">Payments: ${d.payments.map(p => `${formatRs(p.amount)} on ${p.date}`).join(', ')}</div>`
         : '';
-
       return `
         <div class="list-item ${d.settled ? 'settled' : ''}">
           <div class="item-main">
@@ -1368,23 +1698,18 @@
               <span>${d.date}</span>
               ${d.note ? `<span>• ${escapeHtml(d.note)}</span>` : ''}
             </div>
-            <div class="item-sub" style="margin-top:5px;">
+            <div class="item-sub" style="margin-top:4px;">
               <span>Paid: <strong>${formatRs(paid)}</strong> / ${formatRs(d.amount)}</span>
-              ${!d.settled && paid > 0 ? `<span style="color:var(--amber);">• Left: ${formatRs(rem)}</span>` : ''}
             </div>
-            <div class="bar-bg">
-              <div class="bar-fill ${isOwe ? 'red' : 'green'}" style="width:${pct}%"></div>
-            </div>
-            ${historyHtml}
+            <div class="bar-bg"><div class="bar-fill ${isOwe ? 'red' : 'green'}" style="width:${pct}%"></div></div>
+            ${hist}
           </div>
           <div class="item-right">
             <div class="item-amount ${isOwe ? 'text-red' : 'text-green'}">${formatRs(rem)}</div>
             <div class="item-actions">
               ${!d.settled ? `<button class="chip-btn part" onclick="openPartialModal('${d.id}')">+ Pay Part</button>` : ''}
-              <button class="chip-btn ${d.settled ? '' : 'done'}" onclick="fullSettleOrUndo('${d.id}')">
-                ${d.settled ? 'Undo' : 'Full Settle'}
-              </button>
-              <button class="chip-btn del" onclick="deleteDebt('${d.id}')">✕</button>
+              <button class="chip-btn ${d.settled ? '' : 'done'}" onclick="fullSettleOrUndo('${d.id}')">${d.settled ? 'Undo' : 'Full Settle'}</button>
+              <button class="chip-btn del" onclick="deleteWithUndo('debts', '${d.id}', 'Record')">✕</button>
             </div>
           </div>
         </div>
@@ -1392,71 +1717,77 @@
     }).join('');
   }
 
-  // --- FUTURE BUY CHECKLIST ---
+  // --- FUTURE BUY LIST (ONE-TAP PURCHASE FLOW) ---
   document.getElementById('wishForm').addEventListener('submit', function(e) {
     e.preventDefault();
     const name = document.getElementById('wishName').value.trim();
-    const cost = parseFloat(document.getElementById('wishCost').value) || 0;
+    const cost = parseFloat(document.getElementById('wishCost').value);
     const priority = document.getElementById('wishPriority').value;
 
-    if (!name) return;
+    if (!name) return showFieldError('wishError', 'Enter an item name.');
+    if (!Number.isFinite(cost) || cost < 0) return showFieldError('wishError', 'Enter a valid cost (0 or more).');
+    showFieldError('wishError', '');
 
     state.wishlist.unshift({
       id: Date.now().toString(),
-      name,
-      cost,
-      priority,
-      bought: false,
-      createdAt: getTodayStr()
+      name, cost, priority, bought: false, createdAt: getTodayStr()
     });
-
     document.getElementById('wishName').value = '';
     document.getElementById('wishCost').value = '';
     saveState();
-    showToast('Added to buy list');
+    showToast('Added to Buy List');
   });
 
-  function toggleWishBought(id) {
+  function openPurchaseModal(id) {
     const item = state.wishlist.find(w => w.id === id);
-    if (item) {
-      item.bought = !item.bought;
-      saveState();
-      showToast(item.bought ? 'Checked off!' : 'Unchecked');
-    }
+    if (!item) return;
+    document.getElementById('purchaseWishId').value = id;
+    document.getElementById('purchaseModalTitle').textContent = `Purchased "${item.name}"?`;
+    document.getElementById('purchaseModalSub').textContent =
+      `Estimated cost: ${formatRs(item.cost)}. Do you want to automatically log this as a Shopping expense today?`;
+    document.getElementById('purchaseModal').classList.add('open');
   }
 
-  function moveWishToExpense(id) {
+  function closePurchaseModal() {
+    document.getElementById('purchaseModal').classList.remove('open');
+  }
+
+  function confirmPurchase(logExpense) {
+    const id = document.getElementById('purchaseWishId').value;
     const item = state.wishlist.find(w => w.id === id);
     if (!item) return;
     item.bought = true;
-    state.expenses.unshift({
-      id: Date.now().toString(),
-      amount: item.cost,
-      category: 'Shopping',
-      date: getTodayStr(),
-      note: item.name
-    });
+    if (logExpense && Number(item.cost) > 0) {
+      state.expenses.unshift({
+        id: Date.now().toString(),
+        amount: Number(item.cost),
+        category: 'Shopping',
+        date: getTodayStr(),
+        note: item.name
+      });
+    }
+    closePurchaseModal();
     saveState();
-    showToast('Bought & logged to expenses!');
+    showToast(logExpense ? 'Purchased & added to expenses!' : 'Marked as purchased!');
   }
 
-  function deleteWish(id) {
-    state.wishlist = state.wishlist.filter(w => w.id !== id);
-    saveState();
-    showToast('Removed');
+  function undoWishBought(id) {
+    const item = state.wishlist.find(w => w.id === id);
+    if (item) {
+      item.bought = false;
+      saveState();
+      showToast('Moved back to pending');
+    }
   }
 
   function renderWishlist() {
-    const pendingTotal = state.wishlist
-      .filter(w => !w.bought)
-      .reduce((s, w) => s + w.cost, 0);
-
+    const pendingTotal = state.wishlist.filter(w => !w.bought).reduce((s, w) => s + Number(w.cost), 0);
     document.getElementById('wishlistTotal').textContent = formatRs(pendingTotal);
     document.getElementById('wishCount').textContent = `${state.wishlist.length} item${state.wishlist.length === 1 ? '' : 's'}`;
 
     const listEl = document.getElementById('wishList');
     if (state.wishlist.length === 0) {
-      listEl.innerHTML = `<div class="empty-state">Your future buy checklist is empty.</div>`;
+      listEl.innerHTML = `<div class="empty-state">Your future buy list is empty.</div>`;
       return;
     }
 
@@ -1478,120 +1809,382 @@
         <div class="item-right">
           <div class="item-amount text-amber">${formatRs(w.cost)}</div>
           <div class="item-actions">
-            ${!w.bought && w.cost > 0 ? `<button class="chip-btn done" onclick="moveWishToExpense('${w.id}')">Buy & Log</button>` : ''}
-            <button class="chip-btn" onclick="toggleWishBought('${w.id}')">${w.bought ? 'Undo' : 'Check'}</button>
-            <button class="chip-btn del" onclick="deleteWish('${w.id}')">✕</button>
+            ${!w.bought
+              ? `<button class="chip-btn done" onclick="openPurchaseModal('${w.id}')">Purchased</button>`
+              : `<button class="chip-btn" onclick="undoWishBought('${w.id}')">Undo</button>`
+            }
+            <button class="chip-btn del" onclick="deleteWithUndo('wishlist', '${w.id}', 'Item')">✕</button>
           </div>
         </div>
       </div>
     `).join('');
   }
 
-  // --- ALL-MONTHS ANALYSIS TAB ---
-  function renderAnalysis() {
-    const byMonth = {};
-    const byCat = {};
-    const byIncSource = {};
-    let grandSpent = 0;
+  // --- MONTHLY REPORTS & FULL SEARCHABLE HISTORY ---
+  function renderReports() {
+    const monthsSet = new Set([getCurrentMonthStr()]);
+    state.expenses.forEach(e => { if (e.date) monthsSet.add(e.date.slice(0, 7)); });
+    state.incomes.forEach(i => { if (i.date) monthsSet.add(i.date.slice(0, 7)); });
+    const months = Array.from(monthsSet).sort().reverse();
 
-    state.expenses.forEach(item => {
-      if (!item.date) return;
-      const m = item.date.slice(0, 7);
-      if (!byMonth[m]) byMonth[m] = { spent: 0, received: 0 };
-      byMonth[m].spent += Number(item.amount);
-      byCat[item.category] = (byCat[item.category] || 0) + Number(item.amount);
-      grandSpent += Number(item.amount);
+    const sel = document.getElementById('reportMonthSelect');
+    const prevVal = sel.value;
+    sel.innerHTML = months.map(m => `<option value="${m}">${formatMonthLabel(m)}</option>`).join('');
+    sel.value = months.includes(prevVal) ? prevVal : months[0];
+
+    const chosenMonth = sel.value;
+    const monthExp = state.expenses.filter(e => e.date && e.date.startsWith(chosenMonth));
+    const catTotals = {};
+    let mTotal = 0;
+    monthExp.forEach(e => {
+      catTotals[e.category] = (catTotals[e.category] || 0) + Number(e.amount);
+      mTotal += Number(e.amount);
     });
 
-    state.incomes.forEach(item => {
-      if (!item.date) return;
-      const m = item.date.slice(0, 7);
-      if (!byMonth[m]) byMonth[m] = { spent: 0, received: 0 };
-      byMonth[m].received += Number(item.amount);
-      byIncSource[item.source] = (byIncSource[item.source] || 0) + Number(item.amount);
-    });
-
-    const histEl = document.getElementById('monthlyHistoryList');
-    const months = Object.keys(byMonth).sort().reverse();
-    if (months.length === 0) {
-      histEl.innerHTML = `<p style="font-size:0.84rem; color:var(--muted);">No monthly activity recorded yet.</p>`;
+    const catBox = document.getElementById('monthlyCategorySummary');
+    if (mTotal === 0) {
+      catBox.innerHTML = `<p style="font-size:0.84rem; color:var(--muted);">No expenses recorded in ${formatMonthLabel(chosenMonth)}.</p>`;
     } else {
-      const maxVal = Math.max(...months.map(m => Math.max(byMonth[m].spent, byMonth[m].received)), 1);
-      histEl.innerHTML = months.map(m => {
-        const d = byMonth[m];
-        const diff = d.received - d.spent;
-        const pct = Math.round((d.spent / maxVal) * 100);
-        return `
-          <div class="month-block">
-            <div class="month-block-head">
-              <span>${formatMonthLabel(m)}</span>
-              <span class="${diff >= 0 ? 'text-green' : 'text-red'}">
-                ${diff >= 0 ? '+' : '-'}${formatRs(Math.abs(diff))}
-              </span>
-            </div>
-            <div style="font-size:0.78rem; color:var(--muted); margin-bottom:4px;">
-              Received: <strong class="text-green">${formatRs(d.received)}</strong> • Spent: <strong class="text-accent">${formatRs(d.spent)}</strong>
-            </div>
-            <div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    const catEl = document.getElementById('allTimeCategories');
-    if (grandSpent === 0) {
-      catEl.innerHTML = `<p style="font-size:0.84rem; color:var(--muted);">No expense data yet.</p>`;
-    } else {
-      const sortedCats = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
-      catEl.innerHTML = sortedCats.map(([cat, amt]) => {
-        const pct = Math.round((amt / grandSpent) * 100);
+      const sortedCats = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
+      catBox.innerHTML = sortedCats.map(([cat, amt]) => {
+        const pct = Math.round((amt / mTotal) * 100);
         return `
           <div style="margin-bottom:10px;">
-            <div style="display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:3px;">
-              <span>${escapeHtml(cat)}</span>
-              <span style="color:var(--muted);">${formatRs(amt)} (${pct}%)</span>
+            <div style="display:flex; justify-content:space-between; font-size:0.88rem;">
+              <span>• ${escapeHtml(cat)}</span>
+              <strong>${formatRs(amt)} <span style="color:var(--muted); font-weight:500;">(${pct}%)</span></strong>
             </div>
             <div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div>
           </div>
         `;
-      }).join('');
+      }).join('') + `<div style="padding-top:8px; border-top:1px solid var(--border); display:flex; justify-content:space-between; font-size:0.9rem;"><span>Total (${formatMonthLabel(chosenMonth)})</span><strong class="text-accent">${formatRs(mTotal)}</strong></div>`;
     }
 
-    const incEl = document.getElementById('incomeSummaryList');
-    const incEntries = Object.entries(byIncSource).sort((a, b) => b[1] - a[1]);
-    if (incEntries.length === 0) {
-      incEl.innerHTML = `<p style="font-size:0.84rem; color:var(--muted);">No received money recorded yet.</p>`;
-    } else {
-      incEl.innerHTML = incEntries.map(([src, amt]) => `
-        <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border); font-size:0.86rem;">
-          <span>${escapeHtml(src)}</span>
-          <strong class="text-green">${formatRs(amt)}</strong>
+    // All Months List
+    const allBox = document.getElementById('allMonthsList');
+    allBox.innerHTML = months.map(m => {
+      const { spent, received } = getMonthTotals(m);
+      const diff = received - spent;
+      return `
+        <div style="padding:8px 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; font-size:0.86rem;">
+          <div>
+            <strong>${formatMonthLabel(m)}</strong>
+            <div style="font-size:0.75rem; color:var(--muted);">Received: ${formatRs(received)} • Spent: ${formatRs(spent)}</div>
+          </div>
+          <strong class="${diff >= 0 ? 'text-green' : 'text-red'}">${diff >= 0 ? '+' : '-'}${formatRs(Math.abs(diff))}</strong>
         </div>
-      `).join('');
-    }
+      `;
+    }).join('');
 
-    const bytes = new Blob([JSON.stringify(state)]).size;
-    const kb = (bytes / 1024).toFixed(2);
-    document.getElementById('storageStats').textContent =
-      `Records: ${state.expenses.length} expenses, ${state.incomes.length} received entries, ${state.debts.length} friend records, ${state.wishlist.length} buy-list items • Local size: ${kb} KB`;
+    renderHistorySearch();
   }
 
-  function exportJSON() {
-    const payload = {
+  function renderHistorySearch() {
+    const q = (document.getElementById('historySearchInput').value || '').trim().toLowerCase();
+    const resultsEl = document.getElementById('historySearchResults');
+
+    const allItems = [
+      ...state.expenses.map(e => ({
+        date: e.date,
+        title: e.note || e.category,
+        badge: e.category,
+        badgeCls: '',
+        amountStr: formatRs(e.amount),
+        amtCls: '',
+        searchStr: `${e.note} ${e.category} ${e.date} expense`.toLowerCase()
+      })),
+      ...state.incomes.map(i => ({
+        date: i.date,
+        title: i.note || i.source,
+        badge: '+ ' + i.source,
+        badgeCls: 'income',
+        amountStr: '+ ' + formatRs(i.amount),
+        amtCls: 'text-green',
+        searchStr: `${i.note} ${i.source} ${i.date} received income`.toLowerCase()
+      })),
+      ...state.debts.map(d => {
+        const payText = (d.payments || []).map(p => `${formatRs(p.amount)} (${p.date})`).join(', ');
+        return {
+          date: d.date,
+          title: d.type === 'borrowed' ? `Borrowed from ${d.person}` : `Lent to ${d.person}`,
+          badge: d.settled ? 'SETTLED' : (d.type === 'borrowed' ? 'BORROWED' : 'LENT'),
+          badgeCls: d.settled ? 'low' : (d.type === 'borrowed' ? 'high' : 'low'),
+          amountStr: `${formatRs(d.paidAmount || 0)} / ${formatRs(d.amount)}`,
+          amtCls: d.type === 'borrowed' ? 'text-red' : 'text-green',
+          extra: [d.note, payText ? 'Paid: ' + payText : ''].filter(Boolean).join(' • '),
+          searchStr: `${d.person} ${d.note} ${d.date} ${payText} ${d.type} friend`.toLowerCase()
+        };
+      })
+    ].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+    const filtered = q ? allItems.filter(x => x.searchStr.includes(q)) : allItems.slice(0, 25);
+    if (filtered.length === 0) {
+      resultsEl.innerHTML = `<div class="empty-state">No matching records found.</div>`;
+      return;
+    }
+
+    resultsEl.innerHTML = filtered.map(item => `
+      <div class="list-item">
+        <div class="item-main">
+          <div class="item-title">${escapeHtml(item.title)}</div>
+          <div class="item-sub">
+            <span class="pill ${item.badgeCls}">${escapeHtml(item.badge)}</span>
+            <span>${item.date}</span>
+          </div>
+          ${item.extra ? `<div class="item-sub" style="margin-top:4px;">${escapeHtml(item.extra)}</div>` : ''}
+        </div>
+        <div class="item-right">
+          <div class="item-amount ${item.amtCls}">${item.amountStr}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // --- DAILY TARGET STREAK SECTION ---
+  function renderStreak() {
+    const target = Number(state.settings.dailyTarget) || 0;
+    const noBox = document.getElementById('streakNoTargetBox');
+    const actBox = document.getElementById('streakActiveBox');
+
+    if (target <= 0) {
+      noBox.style.display = 'block';
+      actBox.style.display = 'none';
+      return;
+    }
+    noBox.style.display = 'none';
+    actBox.style.display = 'block';
+
+    const todayStr = getTodayStr();
+    const curMonth = todayStr.slice(0, 7);
+    const [year, month] = curMonth.split('-').map(Number);
+    const todayDay = Number(todayStr.slice(8, 10));
+    const daysInMonth = new Date(year, month, 0).getDate();
+
+    // Start tracking from day 1 (or startingDate if within this month)
+    let startDay = 1;
+    if (state.startingDate && state.startingDate.startsWith(curMonth)) {
+      startDay = Math.min(todayDay, Number(state.startingDate.slice(8, 10)));
+    }
+
+    const dailySpend = {};
+    state.expenses.forEach(e => {
+      if (e.date && e.date.startsWith(curMonth)) {
+        const dNum = Number(e.date.slice(8, 10));
+        dailySpend[dNum] = (dailySpend[dNum] || 0) + Number(e.amount);
+      }
+    });
+
+    let okDays = 0;
+    let trackedDays = 0;
+    let currentStreak = 0;
+
+    for (let d = startDay; d <= todayDay; d++) {
+      trackedDays++;
+      const spent = dailySpend[d] || 0;
+      if (spent <= target) okDays++;
+    }
+
+    for (let d = todayDay; d >= startDay; d--) {
+      if ((dailySpend[d] || 0) <= target) currentStreak++;
+      else break;
+    }
+
+    document.getElementById('streakDaysCount').textContent = `${okDays} / ${trackedDays}`;
+    document.getElementById('streakLimitLabel').textContent = `Target: ${formatRs(target)}/day`;
+    document.getElementById('streakCurrentRun').textContent = `${currentStreak} day${currentStreak === 1 ? '' : 's'}`;
+    document.getElementById('streakTodaySpend').textContent = `Today: ${formatRs(dailySpend[todayDay] || 0)}`;
+
+    let cells = '';
+    for (let d = 1; d <= daysInMonth; d++) {
+      let cls = 'day-cell';
+      if (d === todayDay) cls += ' today';
+      if (d >= startDay && d <= todayDay) {
+        cls += (dailySpend[d] || 0) <= target ? ' ok' : ' over';
+      }
+      cells += `<div class="${cls}">${d}</div>`;
+    }
+    document.getElementById('streakCalendarGrid').innerHTML = cells;
+  }
+
+  // --- SAVINGS SECTION ---
+  document.getElementById('savingsForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const amount = parseFloat(document.getElementById('savAmount').value);
+    const date = document.getElementById('savDate').value;
+    const note = document.getElementById('savNote').value.trim();
+
+    if (!Number.isFinite(amount) || amount <= 0) return showFieldError('savError', 'Enter a valid amount greater than Rs. 0.');
+    if (!isValidDateStr(date)) return showFieldError('savError', 'Select a valid date.');
+    showFieldError('savError', '');
+
+    state.savings.unshift({ id: Date.now().toString(), amount, date, note });
+    document.getElementById('savAmount').value = '';
+    document.getElementById('savNote').value = '';
+    saveState();
+    showToast('Added to savings');
+  });
+
+  function renderSavings() {
+    const total = state.savings.reduce((s, x) => s + Number(x.amount), 0);
+    const goal = Number(state.settings.savingsGoal) || 0;
+    document.getElementById('savingsTotalDisplay').textContent = formatRs(total);
+    document.getElementById('savingsGoalSub').textContent =
+      goal > 0 ? `Goal: ${formatRs(goal)} (${Math.min(100, Math.round((total / goal) * 100))}%)` : 'Set a savings goal inside Settings';
+    document.getElementById('savingsProgressBar').style.width =
+      (goal > 0 ? Math.min(100, Math.round((total / goal) * 100)) : 0) + '%';
+
+    document.getElementById('savCount').textContent = `${state.savings.length} entries`;
+    const listEl = document.getElementById('savingsList');
+    if (state.savings.length === 0) {
+      listEl.innerHTML = `<div class="empty-state">No savings logged yet.</div>`;
+      return;
+    }
+    listEl.innerHTML = state.savings.map(s => `
+      <div class="list-item">
+        <div class="item-main">
+          <div class="item-title">${escapeHtml(s.note || 'Savings deposit')}</div>
+          <div class="item-sub"><span>${s.date}</span></div>
+        </div>
+        <div class="item-right">
+          <div class="item-amount text-green">+ ${formatRs(s.amount)}</div>
+          <button class="chip-btn del" onclick="deleteWithUndo('savings', '${s.id}', 'Savings entry')">Delete</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // --- UPCOMING PAYMENTS SECTION ---
+  document.getElementById('upcomingForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const title = document.getElementById('upTitle').value.trim();
+    const amount = parseFloat(document.getElementById('upAmount').value);
+    const date = document.getElementById('upDate').value;
+
+    if (!title) return showFieldError('upError', 'Enter a payment title.');
+    if (!Number.isFinite(amount) || amount <= 0) return showFieldError('upError', 'Enter a valid amount greater than Rs. 0.');
+    if (!isValidDateStr(date)) return showFieldError('upError', 'Select a due date.');
+    showFieldError('upError', '');
+
+    state.upcoming.unshift({ id: Date.now().toString(), title, amount, date, paid: false });
+    document.getElementById('upTitle').value = '';
+    document.getElementById('upAmount').value = '';
+    saveState();
+    showToast('Upcoming payment saved');
+  });
+
+  function payUpcoming(id, logExp) {
+    const item = state.upcoming.find(u => u.id === id);
+    if (!item) return;
+    item.paid = true;
+    if (logExp) {
+      state.expenses.unshift({
+        id: Date.now().toString(),
+        amount: Number(item.amount),
+        category: 'Boarding / Bills',
+        date: getTodayStr(),
+        note: item.title
+      });
+    }
+    saveState();
+    showToast(logExp ? 'Paid & logged to expenses' : 'Marked paid');
+  }
+
+  function renderUpcoming() {
+    const pending = state.upcoming.filter(u => !u.paid);
+    document.getElementById('upCount').textContent = `${pending.length} pending`;
+    const listEl = document.getElementById('upcomingList');
+    if (state.upcoming.length === 0) {
+      listEl.innerHTML = `<div class="empty-state">No upcoming payments scheduled.</div>`;
+      return;
+    }
+    const sorted = [...state.upcoming].sort((a, b) => Number(a.paid) - Number(b.paid) || a.date.localeCompare(b.date));
+    listEl.innerHTML = sorted.map(u => `
+      <div class="list-item ${u.paid ? 'settled' : ''}">
+        <div class="item-main">
+          <div class="item-title ${u.paid ? 'strike' : ''}">${escapeHtml(u.title)}</div>
+          <div class="item-sub"><span>Due: ${u.date}</span></div>
+        </div>
+        <div class="item-right">
+          <div class="item-amount text-amber">${formatRs(u.amount)}</div>
+          <div class="item-actions">
+            ${!u.paid ? `<button class="chip-btn done" onclick="payUpcoming('${u.id}', true)">Pay &amp; Log</button>` : ''}
+            <button class="chip-btn del" onclick="deleteWithUndo('upcoming', '${u.id}', 'Payment')">✕</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // --- SETTINGS & BACKUP ---
+  function populateSettingsForm() {
+    document.getElementById('setStartBalance').value = state.startingBalance || 0;
+    document.getElementById('setStartDate').value = state.startingDate || getTodayStr();
+    document.getElementById('setDailyTarget').value = state.settings.dailyTarget || '';
+    document.getElementById('setSavingsGoal').value = state.settings.savingsGoal || '';
+    showFieldError('settingsError', '');
+  }
+
+  document.getElementById('settingsForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const sb = parseFloat(document.getElementById('setStartBalance').value);
+    const sd = document.getElementById('setStartDate').value;
+    const dt = parseFloat(document.getElementById('setDailyTarget').value || '0');
+    const sg = parseFloat(document.getElementById('setSavingsGoal').value || '0');
+
+    if (!Number.isFinite(sb) || sb < 0) return showFieldError('settingsError', 'Starting cash must be 0 or higher.');
+    if (!isValidDateStr(sd)) return showFieldError('settingsError', 'Select a valid start date.');
+    if (!Number.isFinite(dt) || dt < 0) return showFieldError('settingsError', 'Daily target must be 0 or higher.');
+    if (!Number.isFinite(sg) || sg < 0) return showFieldError('settingsError', 'Savings goal must be 0 or higher.');
+    showFieldError('settingsError', '');
+
+    state.startingBalance = sb;
+    state.startingDate = sd;
+    state.settings.dailyTarget = dt;
+    state.settings.savingsGoal = sg;
+    saveState();
+    showToast('Settings saved!');
+  });
+
+  function buildBackupPayload() {
+    return JSON.stringify({
       app: 'PocketLedger',
-      schemaVersion: 3,
+      schemaVersion: 4,
       exportedAt: new Date().toISOString(),
       currency: 'LKR',
       data: state
-    };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    }, null, 2);
+  }
+
+  function exportJSON() {
+    const blob = new Blob([buildBackupPayload()], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `pocket-ledger-backup-${getTodayStr()}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    showToast('JSON exported');
+    showToast('Saved backup to Downloads');
+  }
+
+  async function shareBackupToDrive() {
+    const fileName = `pocket-ledger-backup-${getTodayStr()}.json`;
+    const file = new File([buildBackupPayload()], fileName, { type: 'application/json' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          title: 'PocketLedger Backup',
+          text: 'Choose Google Drive to save your backup safely.',
+          files: [file]
+        });
+        showToast('Backup shared!');
+        return;
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+      }
+    }
+    // Fallback to standard download if share sheet doesn't support JSON files
+    exportJSON();
+    showToast('Downloaded — upload file to Drive');
   }
 
   function importJSON(event) {
@@ -1602,20 +2195,26 @@
       try {
         const parsed = JSON.parse(e.target.result);
         const data = parsed.data || parsed;
-        if (Array.isArray(data.expenses) && Array.isArray(data.debts) && Array.isArray(data.wishlist)) {
-          state.startingBalance = Number(data.startingBalance) || 0;
-          state.startingDate = data.startingDate || getTodayStr();
-          state.expenses = data.expenses;
-          state.incomes = Array.isArray(data.incomes) ? data.incomes : [];
-          state.debts = data.debts;
-          state.wishlist = data.wishlist;
-          saveState();
-          showToast('Backup restored!');
-        } else {
-          alert('Invalid backup file format.');
+        if (!Array.isArray(data.expenses) || !Array.isArray(data.debts) || !Array.isArray(data.wishlist)) {
+          alert('Invalid backup file: missing required sections.');
+          return;
         }
+        state.startingBalance = Number(data.startingBalance) || 0;
+        state.startingDate = isValidDateStr(data.startingDate) ? data.startingDate : getTodayStr();
+        state.settings = {
+          dailyTarget: Number(data.settings?.dailyTarget) || 0,
+          savingsGoal: Number(data.settings?.savingsGoal) || 0
+        };
+        state.expenses = data.expenses;
+        state.incomes = Array.isArray(data.incomes) ? data.incomes : [];
+        state.debts = data.debts;
+        state.wishlist = data.wishlist;
+        state.savings = Array.isArray(data.savings) ? data.savings : [];
+        state.upcoming = Array.isArray(data.upcoming) ? data.upcoming : [];
+        saveState();
+        showToast('Backup restored successfully!');
       } catch (err) {
-        alert('Could not read JSON file.');
+        alert('Could not read JSON backup file.');
       }
     };
     reader.readAsText(file);
@@ -1623,38 +2222,59 @@
   }
 
   function clearAllData() {
-    if (confirm('Delete ALL local records? Export a backup first!')) {
-      state = { startingBalance: 0, startingDate: getTodayStr(), expenses: [], incomes: [], debts: [], wishlist: [] };
+    if (confirm('Delete ALL local records? Export a backup to Drive or Downloads first!')) {
+      state = {
+        startingBalance: 0,
+        startingDate: getTodayStr(),
+        settings: { dailyTarget: 0, savingsGoal: 0 },
+        expenses: [], incomes: [], debts: [], wishlist: [], savings: [], upcoming: []
+      };
       saveState();
       showToast('All data cleared');
     }
   }
 
-  function escapeHtml(str) {
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+  function renderStorageInfo() {
+    const bytes = new Blob([JSON.stringify(state)]).size;
+    const kb = (bytes / 1024).toFixed(2);
+    document.getElementById('storageStats').textContent =
+      `Expenses: ${state.expenses.length} • Received: ${state.incomes.length} • Friends: ${state.debts.length} • Buy List: ${state.wishlist.length} • Size: ${kb} KB • Persistent Storage: ${storagePersisted}`;
   }
 
   function renderAll() {
+    renderDashboard();
     renderCashflow();
     renderDebts();
     renderWishlist();
-    renderAnalysis();
+    renderReports();
+    renderStreak();
+    renderSavings();
+    renderUpcoming();
+    renderStorageInfo();
   }
 
-  // Register Offline Service Worker if hosted over HTTPS
+  // Request persistent storage so Chrome won't auto-evict local data
+  if (navigator.storage && navigator.storage.persist) {
+    navigator.storage.persist().then(granted => {
+      storagePersisted = granted ? 'Protected (Granted)' : 'Standard';
+      renderStorageInfo();
+    }).catch(() => { storagePersisted = 'Standard'; });
+  } else {
+    storagePersisted = 'Standard';
+  }
+
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js').catch(() => {});
     });
   }
 
-  document.getElementById('expDate').value = getTodayStr();
-  document.getElementById('incDate').value = getTodayStr();
-  document.getElementById('debtDate').value = getTodayStr();
+  const today = getTodayStr();
+  document.getElementById('expDate').value = today;
+  document.getElementById('incDate').value = today;
+  document.getElementById('debtDate').value = today;
+  document.getElementById('savDate').value = today;
+  document.getElementById('upDate').value = today;
   loadState();
   renderAll();
 </script>
